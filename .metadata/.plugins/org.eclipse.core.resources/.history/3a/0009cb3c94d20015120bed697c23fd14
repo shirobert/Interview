@@ -1,0 +1,95 @@
+package com.interview.general.backtracking;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.*;
+public class dfs {
+	
+	/**
+	 * word ladder
+	 */
+	
+	   public List<List<String>> findLadders(String beginWord, String endWord, Set<String> wordList) {
+	        List<List<String>> result = new ArrayList<List<String>> ();
+	        List<String> res = new LinkedList <String>();
+	        if(wordList == null || beginWord == null || endWord == null) return result;
+	        
+	         int len = beginWord.length();
+	        
+	        helper(result,res, beginWord, endWord, wordList, len);
+	        
+	        return result;
+	    }
+	    
+	    public void helper(List<List<String>> result,  List <String> res, String beginWord,String endWord, Set<String> wordList, int len){
+	        if(beginWord.compareTo(endWord) == 0){
+	            result.add(new LinkedList<String>(res));
+	            return;
+	        }
+	        
+	        char [] beginArray = beginWord.toCharArray();
+	        for(int i= 0; i<len; i++){
+	            for(int j = 0; j<26; j++){
+	                char temp = (char)(Integer.valueOf('a')+j);
+	                if(temp != beginArray[i]){
+	                    beginArray[i] = temp;
+	                    String tempStr = new String(beginArray);
+	                    if(wordList.contains(tempStr)){
+	                        res.add(tempStr);
+	                        wordList.remove(tempStr);
+	                        helper(result, res,tempStr, endWord,wordList, len);
+	                        res.remove(res.size()-1);
+	                        wordList.add(tempStr);
+	                    }
+	                }
+	            }
+	        }
+	        
+	    }
+	
+	/**
+	 * Generate Parentheses
+	 * Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.
+	For example, given n = 3, a solution set is:
+	"((()))", "(()())", "(())()", "()(())", "()()()"
+
+	DFS: Time ~ O(N!), Space ~ O(N) 
+	递归中记录左右括号的数量分别为 left 和 right，有三种情况：
+	如果 left == n，表明只加右括号至 right == n 即可；
+	如果 left != n 但 left == right，表明之前的括号已成对，只能加 '('；
+	如果上述情况皆不满足，则可以加 '(' 也可以加 ')'，注意在试完加 '(' 后再试加 ')' 前，要将之前的加入的括号都删除（用一个 int 记住加 '(' 的位置）。
+	注意：因为有第二种情况限制，但 right == left 时只加 '('，所以不会出现 right > left 的情况。
+	 */
+	public List<String> generateParenthesis(int n) {
+	    List<String> list = new ArrayList<>();
+	    addUp(n, 0, 0, new StringBuilder(), list);
+	    return list;
+	}
+
+	private void addUp(int n, int left, int right, StringBuilder str, List<String> list) {
+	    if (left == n) {
+	        while (right < n) {
+	            str.append(')');
+	            right++;
+	        }
+	        list.add(str.toString());
+	    } else if (left == right) { // the parenthese in str are pairs, only add '('
+	        addUp(n, left + 1, right, str.append('('), list);
+	    } else { // the parenthese in str are not pairs, we can either add '(' or ')'
+	        // try to add '('
+	        int len = str.length();
+	        addUp(n, left + 1, right, str.append('('), list);
+	        // try to add ')'
+	        str.delete(len, str.length()); // remove the parenthese generated in the previous line
+	        addUp(n, left, right + 1, str.append(')'), list);
+	    }
+	}
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+	}
+
+}

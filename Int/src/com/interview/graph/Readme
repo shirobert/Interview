@@ -1,0 +1,83 @@
+Undirected graph
+Graph.java 
+	use adjacent list to store the graph
+DepthFirstSearch.java  and DirectedDFS.java
+	doing DFS and use Marked Integer [] Marked array to save if one vertex has been visited.
+DirectedCycle.java
+	check if there is cycle or loop in the graph. 
+	private boolean[] marked;        // marked[v] = has vertex v been marked?
+    private int[] edgeTo;            // edgeTo[v] = previous vertex on path to v
+    private boolean[] onStack;       // onStack[v] = is vertex on the stack? 
+    		(remove the status after the recursion, that's the difference between marked and onStack)
+    private Stack<Integer> cycle;    // directed cycle (or null if no such cycle), save the cycle.
+DepthFristpaths.java 
+	doing DFS and use Marked array and Integer [] EdgeTo to save the path, EdgeTo[2] = 1, meaning 1->2
+CC.java
+	Connected components detection, use DFS to detect the different components. use int[] id to save the
+	index of the component
+Cycle.java
+	check if the graph acylic. use DFS to detect.
+	another classic problem is Twocolor, can also be solved by DFS,
+		use boolean [] color, the color[W] = !color[V] in the recursion, if in any iteration color[w] == color[v]
+		the two color is false.
+SymbolGraph and SymbolDigraph.java
+	create a map to save the mapping between index and real symbol
+	private Map<String, Integer> st;  // string -> index
+    private String[] keys;           // index  -> string
+DegreesOfSeparation.java 
+	use BFS to check the distance betweeen two nodes in the graph.
+
+Summary of undirected graph processing
+
+single-source connectivity DFS
+single-source paths DFS
+single-source shortest paths BFS 
+connectivity CC
+cycle detection Cycle 
+two-colorability (bipartiteness) Twocolor
+
+--------------------------------------------------------
+Directed graph
+
+DirectedCycle.java 
+Solving the directed cycle detection problem thus answers the following question: Is a given digraph a DAG ?
+	private int[] edgeTo;            // edgeTo[v] = previous vertex on path to v
+    private boolean[] onStack;       // onStack[v] = is vertex on the stack?
+    private Stack<Integer> cycle;    // directed cycle (or null if no such cycle)
+DepthFristOrder.java and DepthFirstDirectedPaths.java, topological.java (reversePost)
+
+	used to solve the scheduling problem. before running to get reversePost, need to check if it is a DAG(Directed Acyclic Graph) by
+	calling DirectedCycle. 
+	
+    private Queue<Integer> preorder;   // vertices in preorder (set before each recursive)
+    private Queue<Integer> postorder;  // vertices in postorder (set after each recursive) 
+    private Stack<Integer> reversePost; // vertices in reverse postorder (set after each recursive), 
+
+BreadthFirstPath and BreadthFirstDirectedPaths.java 
+	use queue to do the BFS.
+	private boolean[] marked;  // marked[v] = is there an s-v path
+    private int[] edgeTo;      // edgeTo[v] = previous edge on shortest s-v path
+    private int[] distTo;      // distTo[v] = number of edges shortest s-v path	
+ 
+KosarajuSharirSCC.java, used to  find the strongly connected components (v->W and W->v) in the graph.
+■ Given a digraph G, use DepthFirstOrder to compute the reverse postorder of its reverse, G R.
+■ Run standard DFS on G, but consider the unmarked vertices in the order just computed instead of the standard numerical order.
+■ All vertices reached on a call to the recursive dfs() from the constructor are in a strong component (!), so identify them as in CC.
+
+TransitiveClosure.java used to answer the question "Is there a directed path from a given vertex v to another given vertex w " for all pairs reachability.
+
+summary:
+
+single- and multiple-source reachability                      Directed DFS
+single-source directed paths 								DepthRistDirectedPaths
+single-source shortest directed paths 						BFSDirectedPaths
+directed cycle detection 									DirectedCycle
+depth-first vertex orders									DepthFirstOrder
+precedence-constrained scheduling 							Topological Sort	
+topological sort											Topological
+strong connectivity											KosarajuSCC
+all-pairs reachability										TransitiveClosure
+
+-----------------------------------------------------------
+
+

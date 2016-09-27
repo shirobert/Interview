@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Copy 0 elements to &apos;Int/src/com.interview.structure.stack&apos;&#x0A;- Destination element: &apos;Int/src/com.interview.structure.stack&apos;" description="Copy compilation units" destination="=Int/src&lt;com.interview.structure.stack" files="0" flags="589830" folders="0" id="org.eclipse.jdt.ui.copy" policy="org.eclipse.jdt.ui.copyResources" stamp="1453226776321" units="0" version="1.0"/>
+</session>

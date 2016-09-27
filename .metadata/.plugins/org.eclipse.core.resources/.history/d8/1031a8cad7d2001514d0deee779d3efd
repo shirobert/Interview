@@ -1,0 +1,240 @@
+package com.interview.general.backtracking;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.*;
+
+public class DFS {
+	
+	/**
+	 * word ladder
+	 */
+	
+	   public List<List<String>> findLadders(String beginWord, String endWord, Set<String> wordList) {
+	        List<List<String>> result = new ArrayList<List<String>> ();
+	        List<String> res = new LinkedList <String>();
+	        if(wordList == null || beginWord == null || endWord == null) return result;
+	        
+	        int len = beginWord.length();
+	        Set <String> set = new HashSet<String> ();
+	        Map <String, List<String>> m_word_list = new HashMap <String, List<String>>();
+	        Map <String, Integer> m_word_depth = new HashMap <String, Integer>();
+	        
+	        //helper(result,res, beginWord, endWord, wordList, len, map);
+	        Queue <String> q = new LinkedList <String> ();
+	        q.add(beginWord);
+	        wordList.add(endWord);
+	        
+	        
+	        int minDepth = Integer.MAX_VALUE;
+
+	        while(!q.isEmpty()){
+	            String currWord = q.poll();
+//	            System.out.println(cur);
+	            int curDepth;
+	            if(m_word_depth.containsKey(currWord)){
+	            	curDepth = m_word_depth.get(currWord);
+	            }else{
+	            	curDepth = 0;
+	            }
+	            
+	            if(curDepth >= minDepth) continue;
+	            if(currWord.compareTo(endWord)==0){
+                   minDepth = Math.min(minDepth, curDepth);
+                   continue;
+	            }
+	            for (int i = 0; i < currWord.length(); i++) {
+	                char[] currWordArr = currWord.toCharArray();
+	                for (char c = 'a'; c <= 'z'; c++) {
+	                    currWordArr[i] = c;
+	                    String newWord = new String(currWordArr);
+	                    if(m_word_depth.containsKey(newWord) && m_word_depth.get(newWord) <= curDepth ) continue;
+	                    if (wordList.contains(newWord)) {
+	                    	System.out.println(newWord);
+	                        q.add(newWord);
+	                        m_word_depth.put(newWord, curDepth + 1);
+	                        if(m_word_list.containsKey(newWord)){
+	       	                 m_word_list.get(newWord).add(currWord);
+
+	       	                }else{
+	       	                    List<String> t_list = new LinkedList<String>();
+	       	                    t_list.add(currWord);
+	       	                    m_word_list.put(newWord,t_list);
+	       	                }
+	                    }
+	                }
+	            }
+	           
+	            
+	        }
+	        
+	        
+	        // trace back
+	        
+	        if(!m_word_list.containsKey(endWord)){
+	            return result;
+	        }else{
+	            List<String> list = new LinkedList<String>();
+	            list.add(endWord);
+	            reverse(endWord,beginWord,result,m_word_list, list);
+	        }
+	        
+	        
+	        
+	        return result;
+	    }
+	    
+	    public void reverse(String end, String start, List<List<String>> result,  Map <String, List<String>> m_word_list, List<String> tempList){
+	        if(end.equals(start)){
+	        	List<String> copy = new LinkedList<String> (tempList);
+	        	Collections.reverse(copy);
+	            result.add(copy);
+	            return;
+	        }
+	        List<String> pre = m_word_list.get(end);
+	        if(pre == null) return;
+	        for(String word : pre){
+	            tempList.add(word);
+	            reverse(word, start, result, m_word_list, tempList);
+	            tempList.remove(tempList.size()-1);
+	        }
+	        
+	    }
+	    
+	    
+	    public List<String> getNeighbors(String cur, Set<String> wordList,  Set <String> set){
+	        List<String> res = new LinkedList<String>();
+	        for(int j = 0; j < cur.length(); j++){
+	            char [] cur_arr = cur.toCharArray();
+	            for(char i = 'a'; i <= 'z'; i++){
+	                if(i != cur_arr[j]){
+	                    cur_arr[j] = i;
+	                    String temp = new String(cur_arr);
+	                    if(wordList.contains(temp) && !set.contains(set)){
+	                        res.add(temp);
+	                    }
+	                }
+	            }
+	        }
+	        
+	        
+	        return res;
+	        
+	    }
+	    
+	    // another way
+ 	    public List<List<String>> findLadders2(String start, String end, Set<String> dict) {
+    Queue<String> word = new LinkedList<>();
+    Map<String, Integer> map = new HashMap<>(); // hashmap<word, depth>
+    Map<String, List<String>> m_str_list = new HashMap <>();
+    word.add(start);
+    map.put(start, 1);
+    dict.add(end);
+    // BFS: find all the paths of transformation and store the depths in a HashMap
+    int minDepth = Integer.MAX_VALUE;
+    while (!word.isEmpty()) {
+        String currWord = word.poll();
+        int currDepth = map.get(currWord);
+        if (currDepth >= minDepth)   continue;   // skip adding words to queue
+        if (currWord.equals(end))   {
+            minDepth = Math.min(minDepth, currDepth);
+            continue;
+        }
+        for (int i = 0; i < currWord.length(); i++) {
+            char[] currWordArr = currWord.toCharArray();
+            for (char c = 'a'; c <= 'z'; c++) {
+                currWordArr[i] = c;
+                String newWord = new String(currWordArr);
+                if (dict.contains(newWord) && !map.containsKey(newWord)) {
+                	System.out.println(newWord);
+                    word.add(newWord);
+                    map.put(newWord, currDepth + 1);
+                }
+            }
+        }
+    }
+    
+    // DFS: backtracking from the start to put all the paths into the List
+    List<List<String>> pathSet = new ArrayList<List<String>>();
+    List<String> path = new ArrayList<>();        
+    path.add(start);
+    dfs(start, end, map, path, pathSet);
+    return pathSet;
+}
+
+// DFS (backtracking)
+private void dfs(String start, String end, Map<String, Integer> map, List<String> path, List<List<String>> pathSet) {
+    if (start.equals(end)) {
+        pathSet.add(new ArrayList<String>(path));   // need to initialize a new ArrayList!!
+        return;
+    }
+    int currDepth = map.get(start);
+    for (int i = 0; i < start.length(); i++) {
+        char[] currWordArr = start.toCharArray();
+        for (char c = 'a'; c <= 'z'; c++) {
+            currWordArr[i] = c;
+            String newWord = new String(currWordArr);
+            if (map.containsKey(newWord) && map.get(newWord) == currDepth + 1) {
+                int size = path.size();
+                path.add(newWord);
+                dfs(newWord, end, map, path, pathSet);
+                path.remove(size);
+            }
+        }
+    }
+}
+	    
+	
+
+	
+	/**
+	 * Generate Parentheses
+	 * Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.
+	For example, given n = 3, a solution set is:
+	"((()))", "(()())", "(())()", "()(())", "()()()"
+
+	DFS: Time ~ O(N!), Space ~ O(N) 
+	递归中记录左右括号的数量分别为 left 和 right，有三种情况：
+	如果 left == n，表明只加右括号至 right == n 即可；
+	如果 left != n 但 left == right，表明之前的括号已成对，只能加 '('；
+	如果上述情况皆不满足，则可以加 '(' 也可以加 ')'，注意在试完加 '(' 后再试加 ')' 前，要将之前的加入的括号都删除（用一个 int 记住加 '(' 的位置）。
+	注意：因为有第二种情况限制，但 right == left 时只加 '('，所以不会出现 right > left 的情况。
+	 */
+	public List<String> generateParenthesis(int n) {
+	    List<String> list = new ArrayList<>();
+	    addUp(n, 0, 0, new StringBuilder(), list);
+	    return list;
+	}
+
+	private void addUp(int n, int left, int right, StringBuilder str, List<String> list) {
+	    if (left == n) {
+	        while (right < n) {
+	            str.append(')');
+	            right++;
+	        }
+	        list.add(str.toString());
+	    } else if (left == right) { // the parenthese in str are pairs, only add '('
+	        addUp(n, left + 1, right, str.append('('), list);
+	    } else { // the parenthese in str are not pairs, we can either add '(' or ')'
+	        // try to add '('
+	        int len = str.length();
+	        addUp(n, left + 1, right, str.append('('), list);
+	        // try to add ')'
+	        str.delete(len, str.length()); // remove the parenthese generated in the previous line
+	        addUp(n, left, right + 1, str.append(')'), list);
+	    }
+	}
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		DFS dfs = new DFS();
+		System.out.println("heel");
+		Set <String> list = new HashSet<String>();
+		Collections.addAll(list, "hot","dot","dog","lot","log") ;
+		List<List<String>> res = dfs.findLadders("hit", "cog", list);
+		System.out.println(res);
+	}
+
+}

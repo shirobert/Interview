@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename field &apos;children&apos; in &apos;com.interview.structure.TrieNode&apos; to &apos;nodes&apos;&#x0A;- Original project: &apos;Int&apos;&#x0A;- Original element: &apos;com.interview.structure.TrieNode.children&apos;&#x0A;- Renamed element: &apos;com.interview.structure.TrieNode.nodes&apos;&#x0A;- Update references to refactored element&#x0A;- Update textual occurrences in comments and strings" delegate="false" deprecate="false" description="Rename field &apos;children&apos;" flags="589826" getter="false" id="org.eclipse.jdt.ui.rename.field" input="/src&lt;com.interview.structure{TrieNode.java[TrieNode^children" name="nodes" references="true" setter="false" stamp="1455567868991" textual="false" version="1.0"/>
+</session>

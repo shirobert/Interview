@@ -1,0 +1,1333 @@
+package com.interview.structure;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.*;
+
+public class TreeStruct {
+
+	/**
+	 * Flatten Binary Tree to Linked List
+	 * http://wlcoding.blogspot.com/2015/02/flatten
+	 * -binary-tree-to-linked-list_44.html?view=sidebar
+	 */
+
+	public void flatten(TreeNode root) {
+	    flatten(root,null);
+	}
+	private TreeNode flatten(TreeNode root, TreeNode pre) {
+	    if(root==null) return pre;
+	    pre=flatten(root.right,pre);    
+	    pre=flatten(root.left,pre);
+	    root.right=pre;
+	    root.left=null;
+	    pre=root;
+	    return pre;
+	}
+
+// preferred
+    public void flatten4(TreeNode root){
+        //base case
+        if (root == null)   return;
+        // recursion
+        flatten(root.left);
+        flatten(root.right);
+
+        // base case again before merge
+        if (root.left == null)  return;
+        // merge: root-left-right
+        TreeNode p = root.left;
+        while (p.right != null) p = p.right;
+        p.right = root.right;
+        root.right = root.left;
+        root.left = null;
+    }
+
+	/**
+	 * another recursive way 
+	 * @param root
+	 */
+	public void flatten3(TreeNode root) {
+        // base case:
+		if (root == null) return;
+
+        TreeNode left = root.left;
+        TreeNode right = root.right;
+
+        root.left = null;
+
+        flatten3(left);
+        flatten3(right);
+
+        root.right = left;
+        TreeNode cur = root;
+        while (cur.right != null) cur = cur.right;
+        cur.right = right;
+    }
+	
+	/**
+	 * 2. Iteration (no Stack): Time ~ O(N), Space ~ O(1) 类似Recursion的第二步：
+	 * connect the rightmost node of leftSubTree to the rigthSubTree; point
+	 * curr.right to curr.left, and point curr.left = null; move curr to
+	 * curr.right (Iteration 需要这步，直至 curr == null 停止).
+	 * 
+	 * @param root
+	 */
+
+	public void flatten2(TreeNode root) {
+		TreeNode curr = root;
+		while (curr != null) {
+			if (curr.left != null) {
+				// connect the rightmost node in the left subtree to the right
+				// node
+				if (curr.right != null) {
+					TreeNode next = curr.left;
+					while (next.right != null)
+						next = next.right;
+					next.right = curr.right;
+				}
+				// move left node to right
+				curr.right = curr.left;
+				curr.left = null;
+			}
+			curr = curr.right;
+		}
+	}
+
+	/**
+	 * No. 112 Given a binary tree and a sum, determine if the tree has a
+	 * root-to-leaf path such that adding up all the values along the path
+	 * equals the given sum.
+	 * 
+	 * For example: Given the below binary tree and sum = 22, 5 / \ 4 8 / / \ 11
+	 * 13 4 / \ \ 7 2 1 return true, as there exist a root-to-leaf path
+	 * 5->4->11->2 which sum is 22.
+	 * 
+	 * @param root
+	 * @param sum
+	 * @return
+	 */
+
+
+
+
+	public boolean hasPathSum(TreeNode root, int sum) {
+        // base case
+		if (root == null) {
+			return false;
+		}
+        // if reach to the leaf node
+		if (root.left == null && root.right == null) {
+			if (sum - root.val == 0)
+				return true;
+			else
+				return false;
+		}
+        // recursive
+		return hasPathSum(root.left, sum - root.val)
+				|| hasPathSum(root.right, sum - root.val);
+	}
+
+	/**
+	 * No. 113 Given a binary tree and a sum, find all root-to-leaf paths where
+	 * each path's sum equals the given sum.
+	 * 
+	 * For example: Given the below binary tree and sum = 22, 5 / \ 4 8 / / \ 11
+	 * 13 4 / \ / \ 7 2 5 1 return [ [5,4,11,2], [5,8,4,5] ]
+	 * 
+	 * @param root
+	 * @param sum
+	 * @return
+	 */
+
+	public List<List<Integer>> pathSum(TreeNode root, int sum) {
+		List<List<Integer>> sumList = new LinkedList<>();
+		;
+		List<Integer> tempList = new LinkedList<Integer>();
+		sumPath(root, sumList, sum, tempList);
+		return sumList;
+	}
+
+	public void sumPath(TreeNode root, List<List<Integer>> sumList, int sum,
+			List<Integer> tempList) {
+        // base case
+		if (root == null)
+			return;
+        // add current node
+		tempList.add(root.val);
+        // when reach to the leaf node
+		if (root.left == null && root.right == null) {
+			if (sum - root.val == 0) {
+				sumList.add(new LinkedList<Integer>(tempList));  // need to make a copy of templist
+			}
+		}
+        // do the left and right..
+		sumPath(root.left, sumList, sum - root.val, tempList);
+		sumPath(root.right, sumList, sum - root.val, tempList);
+
+        // remove the current node
+		tempList.remove(tempList.size() - 1);
+	}
+
+	/**
+	 * 
+	 * Given a binary tree, return all root-to-leaf paths.
+	 * 
+	 * For example, given the following binary tree:
+	 * 
+	 * 1 / \ 2 3 \ 5 All root-to-leaf paths are:
+	 * 
+	 * ["1->2->5", "1->3"]
+	 * 
+	 * 
+	 * Solution: same as the previous, linear recursive.
+	 * 
+	 * @param root
+	 * @return
+	 */
+	public List<String> binaryTreePaths(TreeNode root) {
+		List<String> result = new LinkedList<String>();
+		List<Integer> sb = new ArrayList<>();
+		binaryTreePaths(root, result, sb);
+		return result;
+	}
+
+	public void binaryTreePaths(TreeNode root, List<String> result,
+			List<Integer> str) {
+		if (root == null)
+			return;
+		str.add(root.val);
+		if (root.left == null && root.right == null) {
+			StringBuilder sb = new StringBuilder();
+			for (Integer i : str) {
+				sb.append(String.valueOf(i));
+				sb.append("->");
+			}
+			result.add(sb.substring(0, sb.length() - 2));
+		}
+		binaryTreePaths(root.left, result, str);
+		binaryTreePaths(root.right, result, str);
+
+		str.remove(str.size() - 1);
+
+	}
+
+	/**
+	 * No. 129 Sum Root to Leaf Numbers Given a binary tree containing digits
+	 * from 0-9 only, each root-to-leaf path could represent a number. An
+	 * example is the root-to-leaf path 1->2->3 which represents the number 123.
+	 * Find the total sum of all root-to-leaf numbers. For example, 1 / \ 2 3
+	 * The root-to-leaf path 1->2 represents the number 12. The root-to-leaf
+	 * path 1->3 represents the number 13. Return the sum = 12 + 13 = 25.
+	 */
+
+	public int sumNumbers(TreeNode root) {
+		return dfs(root, 0);
+	}
+
+
+	private int dfs(TreeNode root, int sum) {
+		// base case
+        if (root == null)
+			return 0;
+
+        // regular case:
+		sum = sum * 10 + root.val;
+
+        // reaching to leaf
+		if (root.left == null && root.right == null)
+			return sum;
+
+        // recursion
+		return dfs(root.left, sum) + dfs(root.right, sum);
+	}
+
+	/**
+	 * No. 222
+	 * Count Complete Tree Nodes.
+	 * 
+	 * Given a complete binary tree, count the number of nodes.
+
+Definition of a complete binary tree from Wikipedia:
+In a complete binary tree every level, except possibly the last, 
+is completely filled, and all nodes in the last level are as far left as possible. It can have between 1 and 2h nodes inclusive at the last level h.
+	 */
+
+    //https://discuss.leetcode.com/topic/15533/concise-java-solutions-o-log-n-2
+
+	int height(TreeNode root) {
+        return root == null ? 0 : 1 + height(root.left);
+    }
+    public int countNodes(TreeNode root) {
+        int h = height(root);
+        return h < 1 ? 0 :
+               height(root.right) == h-1 ? (1 << (h-1)) + countNodes(root.right)
+                                         : (1 << (h-2)) + countNodes(root.left);
+    }
+    
+	/**
+	 * No. 230 Kth Smallest Element in a BST
+	 * 
+	 */
+
+	private Queue<TreeNode> q = new LinkedList<>();
+
+	public int kthSmallest(TreeNode root, int k) {
+		if (k == 0)
+			throw new IllegalArgumentException("k is zero!");
+		inorder(root);
+		if (q.size() < k)
+			throw new IllegalArgumentException("k exceeds tree size!");
+
+		for (int i = 0; i < k - 1; i++) {
+			q.poll();
+		}
+		return q.poll().val;
+	}
+
+	private void inorder(TreeNode x) {
+		if (x == null)
+			return;
+		if (x.left != null)
+			inorder(x.left);
+		q.add(x);
+		if (x.right != null)
+			inorder(x.right);
+	}
+
+	/*
+	 * another way. DFS inorder
+	 */
+
+    private static int number = 0;
+    private static int count = 0;
+
+    public int kthSmallest2(TreeNode root, int k) {
+        count = k;
+        kthSmallest2helper(root);
+        return number;
+    }
+
+    public void kthSmallest2helper(TreeNode n) {
+        if (n.left != null) kthSmallest2helper(n.left);
+        count--;
+        if (count == 0) {
+            number = n.val;
+            return;
+        }
+        if (n.right != null) kthSmallest2helper(n.right);
+    }
+
+
+    /**
+     *
+     * another way to use Node to store count and value
+     */
+
+    public int kthSmallest3(TreeNode root, int k) {
+        TreeNode result = new TreeNode(k); // using tree.val to store k, and tree.left to point to kth element
+        kthSmallest3Helper(root, result);
+        return result.left.val;
+    }
+
+    public void kthSmallest3Helper(TreeNode root, TreeNode result) {
+        // base case:
+        if(root == null || result.left != null) return;
+        // recursive
+        kthSmallest3Helper(root.left, result);
+
+        // regular case
+        result.val = result.val - 1;
+        if(result.val == 0) {
+            result.left = root; // kth element
+        }
+
+
+        kthSmallest3Helper(root.right, result);
+    }
+
+    /**
+     * No. 199 Given a binary tree, imagine yourself standing on the right side
+	 * of it, return the values of the nodes you can see ordered from top to
+	 * bottom.
+	 * 
+	 * For example: Given the following binary tree, 1 <--- / \ 2 3 <--- \ \ 5 4
+	 * <--- You should return [1, 3, 4].
+	 * 
+	 * @param root
+	 * @return
+	 */
+
+    public List<Integer> rightSideView(TreeNode root) {
+
+        // use level traverse print tech
+        List<Integer> list = new ArrayList<Integer>();
+        if (root == null)
+            return list;
+        Queue<TreeNode> queue = new LinkedList<TreeNode>();
+        queue.add(root);
+        Queue<TreeNode> nextRow = new LinkedList<TreeNode>();
+
+        while (queue.size() != 0) {
+            TreeNode curr = queue.poll();
+            if (curr.left != null)
+                nextRow.add(curr.left);
+            if (curr.right != null)
+                nextRow.add(curr.right);
+            if(queue.size() == 0) {
+                list.add(curr.val);
+                queue = nextRow;
+                nextRow = new LinkedList<>();
+            }
+        }
+
+
+        return list;
+    }
+
+
+	// another solution with recursive
+	public List<Integer> rightSideView2(TreeNode root) {
+		Map<Integer, Integer> m = new TreeMap<>();
+        rightSideView2Helper(root, 0, m);
+		return new ArrayList<>(m.values());
+	}
+
+	private void rightSideView2Helper(TreeNode node, int level, Map<Integer, Integer> m) {
+		if (node == null) {
+			return;
+		}
+		m.put(level, node.val);
+        rightSideView2Helper(node.left, level + 1, m);
+        rightSideView2Helper(node.right, level + 1, m);
+	}
+
+
+    /**
+     * another way, recursive
+     * 1.Each depth of the tree only select one node.
+     2. View depth is current size of result list.
+     */
+
+    public List<Integer> rightSideView3(TreeNode root) {
+        List<Integer> result = new ArrayList<Integer>();
+        rightView3Helper(root, result, 0);
+        return result;
+    }
+
+    public void rightView3Helper(TreeNode curr, List<Integer> result, int currDepth){
+        if(curr == null){
+            return;
+        }
+        if(currDepth == result.size()){
+            result.add(curr.val);
+        }
+
+        rightView3Helper(curr.right, result, currDepth + 1);
+        rightView3Helper(curr.left, result, currDepth + 1);
+
+    }
+
+
+
+    /**
+     * Binary Tree Preorder Traversal Given a binary tree, return the preorder
+	 * traversal of its nodes' values.
+	 * 
+	 * For example: Given binary tree {1,#,2,3},
+	 * Given binary tree {1,#,2,3},
+   1
+    \
+     2
+    /
+   3
+return [1,2,3].
+
+All traversals used stack to store the nodes, preorder and inorder push current or left, postorder after find 
+the most left nodes, when pop out, needs to check if the node is the previous nodes' left or not, if it is the
+left node, needs to go rigth subtree to find the left most node. If not then pop the next node. 
+
+	 */
+
+	public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> result = new ArrayList<>();
+        Stack<TreeNode> stack = new Stack<>();
+        if(root == null) return result;
+        stack.push(root);
+        while(!stack.isEmpty()){
+            TreeNode tn = stack.pop();
+            result.add(tn.val);
+            if(tn.right != null){
+                stack.push(tn.right);
+            }
+            if(tn.left != null){
+                stack.push(tn.left);
+            }
+        }
+        
+        return result;
+	}
+
+	/**
+	 * Binary Tree Inorder Traversal Given a binary tree, return the inorder
+	 * traversal of its nodes' values.
+	 * 
+	 * For example: Given binary tree {1,#,2,3},
+	 */
+	// basically use a current node to check the direction and a stack to store
+	// the nodes.
+
+	public List<Integer> inorderTraversal(TreeNode root) {
+		Stack<TreeNode> stack = new Stack<TreeNode>();
+		TreeNode current = root;
+		List<Integer> result = new ArrayList<Integer>();
+		if (root == null)
+			return result;
+
+        while(current != null){
+			stack.push(current);
+			current = current.left;
+		}
+		
+		while(!stack.isEmpty()){
+			current = stack.pop();
+			result.add(current.val);
+			TreeNode temp = current.right;
+			while(temp != null){
+				stack.push(temp);
+				temp = temp.left;
+			}
+		}
+		
+		return result;
+	}
+
+	/**
+	 * postOrderTraversal
+	 * 
+	 * @param root
+	 * @return
+	 */
+	public List<Integer> postorderTraversal(TreeNode root) {
+		Stack<TreeNode> stack = new Stack<TreeNode>();
+
+		List<Integer> result = new ArrayList<Integer>();
+		if (root == null)
+			return result;
+		postorderTraversal_findMostLeft(stack, root);
+
+		while (!stack.isEmpty()) {
+			TreeNode temp = stack.pop();
+			result.add(temp.val);
+			if (!stack.isEmpty()) {
+				if (temp == stack.peek().left) {
+					postorderTraversal_findMostLeft(stack, stack.peek().right);
+				}
+			}
+
+		}
+
+		return result;
+	}
+
+	private void postorderTraversal_findMostLeft(Stack<TreeNode> stack, TreeNode root) {
+
+		while (root != null) {
+			stack.add(root);
+			if (root.left != null) {
+				root = root.left;
+			} else if (root.right != null) {
+				root = root.right;
+			} else {
+				break;
+			}
+		}
+	}
+
+	/**
+	 * No. 98
+	 * check if the tree is BST
+	 */
+
+	public boolean isValidBST(TreeNode root) {
+		return isValidBST_Helper(root, null, null);
+	}
+
+	private boolean isValidBST_Helper(TreeNode p, Integer low, Integer high) {
+		if (p == null)
+			return true;
+		return (low == null || p.val > low) && (high == null || p.val < high)
+				&& isValidBST_Helper(p.left, low, p.val) && isValidBST_Helper(p.right, p.val, high);
+	}
+
+	/**
+	 * Given a binary tree, find its maximum depth. The maximum depth is the
+	 * number of nodes along the longest path from the root node down to the
+	 * farthest leaf node.
+	 * 
+	 * @param root
+	 * @return
+	 */
+
+	public int maxDepth(TreeNode root) {
+		if (root == null)
+			return 0;
+		return Math.max(maxDepth(root.left), maxDepth(root.right)) + 1;
+	}
+    //iterative
+    public int maxDepth2(TreeNode root) {
+        if (root == null)
+            return 0;
+
+        Queue <TreeNode> q = new LinkedList<TreeNode>();
+
+        q.add(root);
+        int depth = 0;
+        int count = 1;
+
+        while (!q.isEmpty()) {
+
+            TreeNode cur = q.poll();
+            count--;
+            if (cur.left != null)
+                q.add(cur.left);
+            if (cur.right != null)
+                q.add(cur.right);
+
+            if (count ==0){
+                count = q.size();
+                depth++;
+            }
+
+        }
+        return depth;
+
+    }
+
+	/**
+	 * Given a binary tree, find its minimum depth. The minimum depth is the
+	 * number of nodes along the shortest path from the root node down to the
+	 * nearest leaf node i. The node itself is a leaf node. The minimum depth is
+	 * one. ii. Node that has one empty sub-tree while the other one is
+	 * non-empty. Return the minimum depth of that non-empty sub-tree.
+	 * 
+	 * @param root
+	 * @return
+	 */
+// recursion
+	public int minDepth(TreeNode root) {
+		if (root == null)
+			return 0;
+		if (root.left == null)
+			return minDepth(root.right) + 1;
+		if (root.right == null)
+			return minDepth(root.left) + 1;
+		return Math.min(minDepth(root.left), minDepth(root.right)) + 1;
+	}
+// iterative version
+	public int minDepth2(TreeNode root) {
+		if (root == null)
+			return 0;
+		Queue<TreeNode> q = new LinkedList<>();
+		q.add(root);
+		// TreeNode rightMost = root;
+		int count = 1;
+		int depth = 1;
+		while (!q.isEmpty()) {
+			TreeNode node = q.poll();
+			count--;
+			if (node.left == null && node.right == null)
+				break;
+
+			if (node.left != null) {
+				q.add(node.left);
+			}
+			if (node.right != null) {
+				q.add(node.right);
+			}
+			if (count == 0) {
+				depth++;
+				count = q.size();
+			}
+		}
+		return depth;
+	}
+
+	/**
+	 * Given a binary tree, determine if it is height-balanced. For this
+	 * problem, a height-balanced binary tree is defined as a binary tree in
+	 * which the depth of the two subtrees of every node never differs by more
+	 * than 1.
+	 * 
+	 * @param root
+	 * @return
+	 */
+	// O(n2) runtime, O(n) stack space – Brute force top-down recursion:
+
+	public boolean isBalanced(TreeNode root) {
+		if (root == null)
+			return true;
+		return Math.abs(isBalanced_maxDepth(root.left) - isBalanced_maxDepth(root.right)) <= 1
+				&& isBalanced(root.left) && isBalanced(root.right);
+	}
+    
+	private int isBalanced_maxDepth(TreeNode root) {
+		if (root == null)
+			return 0;
+		return Math.max(isBalanced_maxDepth(root.left), isBalanced_maxDepth(root.right)) + 1;
+	}
+
+	// O(n) runtime, O(n) stack space – Bottom-up recursion:
+    // https://discuss.leetcode.com/topic/7798/the-bottom-up-o-n-solution-would-be-better
+	public boolean isBalanced2(TreeNode root) {
+		return isBalanced2_maxDepth(root) != -1;
+	}
+
+	private int isBalanced2_maxDepth(TreeNode root) {
+		if (root == null)
+			return 0;
+		int L = isBalanced2_maxDepth(root.left);
+		if (L == -1)
+			return -1;
+		int R = isBalanced2_maxDepth(root.right);
+		if (R == -1)
+			return -1;
+		return (Math.abs(L - R) <= 1) ? (Math.max(L, R) + 1) : -1;
+	}
+
+	/**
+	 * Given an array where elements are sorted in ascending order, convert it
+	 * to a height balanced BST. O(n) runtime, O(log n) stack space – Divide and
+	 * conquer:
+	 */
+
+	public TreeNode sortedArrayToBST(int[] num) {
+		return sortedArrayToBST(num, 0, num.length - 1);
+	}
+
+	private TreeNode sortedArrayToBST(int[] arr, int start, int end) {
+		if (start > end)
+			return null;
+		int mid = (start + end) / 2;
+		TreeNode node = new TreeNode(arr[mid]);
+		node.left = sortedArrayToBST(arr, start, mid - 1);
+		node.right = sortedArrayToBST(arr, mid + 1, end);
+		return node;
+	}
+
+	/**
+	 * ?? Given a singly linked list where elements are sorted in ascending
+	 * order, convert it to a height balanced BST.
+	 */
+	public class ListNode {
+		int val;
+		ListNode next;
+
+		ListNode(int x) {
+			val = x;
+		}
+	}
+
+	private ListNode list;
+
+	private TreeNode sortedListToBST(int start, int end) {
+		if (start > end)
+			return null;
+		int mid = (start + end) / 2;
+		TreeNode leftChild = sortedListToBST(start, mid - 1);
+		TreeNode parent = new TreeNode(list.val);
+		parent.left = leftChild;
+		list = list.next;
+		parent.right = sortedListToBST(mid + 1, end);
+		return parent;
+	}
+
+	public TreeNode sortedListToBST(ListNode head) {
+		int n = 0;
+		ListNode p = head;
+		while (p != null) {
+			p = p.next;
+			n++;
+		}
+		list = head;
+		return sortedListToBST(0, n - 1);
+	}
+
+	/**
+	 * 
+	 * Given a binary tree, find the maximum path sum. The path may start and
+	 * end at any node in the tree.
+	 * 
+	 * Example Questions Candidate Might Ask: Q: What if the tree is empty? A:
+	 * Assume the tree is non-empty. Q: How about a tree that contains only a
+	 * single node? A: Then the maximum path sum starts and ends at the same
+	 * node. Difficulty: Hard, Frequency: Medium ￼￼Q: What if every node
+	 * contains negative value? A: Then you should return the single node value
+	 * that is the least negative. Q: Does the maximum path have to go through
+	 * the root node? A: Not necessarily. For example, the below tree yield 6 as
+	 * the maximum path sum and does not go through root.
+	 * 
+	 * 
+	 * Try the bottom up approach. At each node, the potential maximum path
+	 * could be one of these cases: i. max(left subtree) + node ii. max(right
+	 * subtree) + node iii. max(left subtree) + max(right subtree) + node iv.
+	 * the node itself
+	 * 
+	 * Then, we need to return the maximum path sum that goes through this node
+	 * and to either one of its left or right subtree to its parent. There’s a
+	 * little trick here: If this maximum happens to be negative, we should
+	 * return 0, which means: “Do not include this subtree as part of the
+	 * maximum path of the parent node”, which greatly simplifies our code.
+	 */
+
+	private int maxSum;
+
+	public int maxPathSum(TreeNode root) {
+		maxSum = Integer.MIN_VALUE;
+		findMax(root);
+		return maxSum;
+	}
+
+	private int findMax(TreeNode p) {
+		if (p == null)
+			return 0;
+		int left = findMax(p.left);
+		int right = findMax(p.right);
+		maxSum = Math.max(p.val + left + right, maxSum);
+		int ret = p.val + Math.max(left, right);
+		return ret > 0 ? ret : 0;
+	}
+	/**
+	 * No. 107 Given a binary tree, return the level order traversal of its
+	 * nodes' values. (ie, from left to right, level by level).
+	 */
+	public List<List<Integer>> levelOrder(TreeNode root) {
+		List<List<Integer>> result = new ArrayList<List<Integer>>();
+		if (root == null)
+			return result;
+		Queue<TreeNode> currentLevel = new LinkedList<TreeNode>();
+		currentLevel.add(root);
+		Queue<TreeNode> nextLevel = new LinkedList<TreeNode>();
+		List<Integer> tempList = new ArrayList<Integer>();
+		while (!currentLevel.isEmpty()) {
+			TreeNode tn = currentLevel.poll();
+			if (tn.left != null)
+				nextLevel.add(tn.left);
+			if (tn.right != null)
+				nextLevel.add(tn.right);
+			tempList.add(tn.val);
+
+			if (currentLevel.isEmpty()) {
+				currentLevel = nextLevel;
+				nextLevel = new LinkedList<TreeNode>();
+				result.add(tempList);
+				tempList = new ArrayList<Integer>();
+			}
+		}
+
+		return result;
+
+	}
+
+	/**
+	 * With only one queue and one counter.
+	 * 
+	 * @param root
+	 * @return
+	 */
+	public List<List<Integer>> levelOrder2(TreeNode root) {
+
+		List<List<Integer>> result = new LinkedList<>();
+		if (root == null)
+			return result;
+		Queue<TreeNode> q = new LinkedList<>();
+		q.add(root);
+		List<Integer> t = new LinkedList<>();
+		int count = 1;
+		while (!q.isEmpty()) {
+			TreeNode temp = q.poll();
+			if (temp.left != null)
+				q.add(temp.left);
+			if (temp.right != null)
+				q.add(temp.right);
+			t.add(temp.val);
+			count--;
+			if (count == 0) {
+				result.add(t);
+				t = new LinkedList<Integer>();
+				count = q.size();
+			}
+		}
+		return result;
+
+	}
+
+	/**
+	 * Given a binary tree, return the level order traversal of its nodes'
+	 * values with DFS instead of BFS. (ie, from left to right, level by level).
+	 */
+
+	public void printlevel(TreeNode p, int level) {
+		if (p == null)
+			return;
+		if (level == 1) {
+			System.out.print(p.val);
+		} else {
+			printlevel(p.left, level - 1);
+			printlevel(p.right, level - 1);
+		}
+	}
+
+	public void printLevelOrderDFS(TreeNode root) {
+		int height = maxDepth(root);
+		for (int level = 1; level <= height; level++) {
+			printlevel(root, level);
+			System.out.println();
+		}
+	}
+
+	// *************************** Graph Part
+
+	/*
+	 * No.133 Clone Graph
+	 */
+
+	class UndirectedGraphNode {
+		int label;
+		List<UndirectedGraphNode> neighbors;
+
+		UndirectedGraphNode(int x) {
+			label = x;
+			neighbors = new ArrayList<UndirectedGraphNode>();
+		}
+	};
+
+	public UndirectedGraphNode cloneGraph(UndirectedGraphNode graph) {
+		if (graph == null)
+			return null;
+		Map<UndirectedGraphNode, UndirectedGraphNode> map = new HashMap<>();
+		return DFS(graph, map);
+	}
+
+	private UndirectedGraphNode DFS(UndirectedGraphNode graph,
+			Map<UndirectedGraphNode, UndirectedGraphNode> map) {
+		if (map.containsKey(graph)) {
+			return map.get(graph);
+		}
+		UndirectedGraphNode graphCopy = new UndirectedGraphNode(graph.label);
+		map.put(graph, graphCopy);
+		for (UndirectedGraphNode neighbor : graph.neighbors) {
+			graphCopy.neighbors.add(DFS(neighbor, map));
+		}
+		return graphCopy;
+	}
+
+	/**
+	 * Implement an iterator over a binary search tree (BST). Your iterator will
+	 * be initialized with the root node of a BST.
+	 * 
+	 * Calling next() will return the next smallest number in the BST.
+	 * 
+	 * Note: next() and hasNext() should run in average O(1) time and uses O(h)
+	 * memory, where h is the height of the tree.
+	 * 
+	 * @author leish
+	 * 
+	 */
+
+	/**
+	 * This contains all three ways iterators
+	 * http://wlcoding.blogspot.com/2015/03
+	 * /binary-search-tree-iterator.html?view=sidebar
+	 */
+
+	// Inorder BST Iterator.
+	/**
+	 * constructor： 找到最左节点，recursively call pushLeftChildren()。 next()： 要先 check
+	 * hasNext()； 然后从 Stack 中 pop 一个 node，将其右子树入栈，再返回该 node 的 val。
+	 * hasNext()：Iterator 要注意 call hasNext() 不能影响 next() 的结果。 用一个Stack，hasNext()
+	 * 中只需 check 该 Stack 是否为空。
+	 * 
+	 * @author leish
+	 * 
+	 */
+
+	public class BSTIteratorInorder {
+		private Stack<TreeNode> stack = new Stack<>();
+
+		public BSTIteratorInorder(TreeNode root) {
+			pushLeftChildren(root); // find the first node (leftmost) to start,
+									// and store the trace
+		}
+
+		// push all the left subnodes to stack until reaching the first node in
+		// inorder (the leftmost node)
+		private void pushLeftChildren(TreeNode curr) {
+			while (curr != null) {
+				stack.add(curr);
+				curr = curr.left;
+			}
+		}
+
+		/** @return whether we have a next smallest number */
+		public boolean hasNext() {
+			return !stack.isEmpty();
+		}
+
+		/** @return the next smallest number */
+		public int next() {
+			if (!hasNext())
+				throw new NoSuchElementException("All nodes have been visited");
+
+			TreeNode res = stack.pop();
+			pushLeftChildren(res.right);
+			return res.val;
+		}
+	}
+
+	// Preorder BST Iterator. constructor：仅将 root 入栈。
+	// next()： 先将左节点入栈，再将右节点入栈，最后返回该 node 的 val。
+
+	public class BSTIteratorPreorder {
+		private Stack<TreeNode> stack = new Stack<>();
+
+		public BSTIteratorPreorder(TreeNode root) {
+			if (root != null)
+				stack.push(root); // find the first node (root) to start
+		}
+		
+		/** @return whether we have a next smallest number */
+		public boolean hasNext() {
+			return !stack.isEmpty();
+		}
+
+		/** @return the next smallest number */
+		public int next() {
+			if (!hasNext())
+				throw new NoSuchElementException("All nodes have been visited");
+
+			TreeNode res = stack.pop();
+			if (res.right != null)
+				stack.add(res.right);
+			if (res.left != null)
+				stack.add(res.left);
+			return res.val;
+		}
+	}
+
+	// Postorder BST Iterator
+	/**
+	 * constructor：找到 postorder 中的第一个节点（最左节点），若左节点存在为左节点，若不存在则为有节点，recursively
+	 * call findNextLeaf()。 next()：复杂一些，需要判断该 node 是左节点还是右节点（check 是否等于其 parent
+	 * 的left node，parent 要用 stack.peek() 调用，否则会影响下一个 next()），若是左节点，则 call
+	 * findNextLeaf(parent.right)，若是右节点，则不需要，因为 Stack 中下一个 node 为 parent。
+	 * 
+	 * @author leish
+	 * 
+	 */
+
+	public class BSTIteratorPostorder {
+		private Stack<TreeNode> stack = new Stack<>();
+
+		public BSTIteratorPostorder(TreeNode root) {
+			findNextLeaf(root); // find the first node (zigzag down to bottom)
+								// to start, and store the trace
+		}
+
+		// find the first node in postorder, in the trace (can be zigzag) every
+		// node is its next node's parent
+		private void findNextLeaf(TreeNode curr) {
+			while (curr != null) {
+				stack.push(curr);
+				if (curr.left != null)
+					curr = curr.left;
+				else
+					curr = curr.right;
+			}
+		}
+
+		/** @return whether we have a next smallest number */
+		public boolean hasNext() {
+			return !stack.isEmpty();
+		}
+
+		/** @return the next smallest number */
+		public int next() {
+			if (!hasNext())
+				throw new NoSuchElementException("All nodes have been visited");
+
+			TreeNode res = stack.pop();
+			if (!stack.isEmpty()) {
+				TreeNode parent = stack.peek();
+				if (res == parent.left)
+					findNextLeaf(parent.right);
+			}
+			return res.val;
+		}
+	}
+
+	/**
+	 * No. 96 Number of unique BST tree
+	 * 比如，以1为根的树有几个，完全取决于有二个元素的子树有几种。同理，2为根的子树取决于一个元素的子树有几个。以3为根的情况，则与1相同。
+	 * 
+	 * 定义Count[i] 为以[0,i]能产生的Unique Binary Tree的数目，
+	 * 
+	 * 如果数组为空，毫无疑问，只有一种BST，即空树， Count[0] =1
+	 * 
+	 * 如果数组仅有一个元素{1}，只有一种BST，单个节点 Count[1] = 1
+	 * 
+	 * 如果数组有两个元素{1,2}， 那么有如下两种可能 1 2 \ / 2 1 Count[2] = Count[0] * Count[1]
+	 * (1为根的情况) + Count[1] * Count[0] (2为根的情况。
+	 * 
+	 * 再看一遍三个元素的数组，可以发现BST的取值方式如下： Count[3] = Count[0]*Count[2] (1为根的情况) +
+	 * Count[1]*Count[1] (2为根的情况) + Count[2]*Count[0] (3为根的情况)
+	 * 
+	 * 所以，由此观察，可以得出Count的递推公式为 Count[i] = ∑ Count[0...k] * [ k+1....i] 0<=k<i-1
+	 * 问题至此划归为一维动态规划。
+	 * 
+	 * 这是很有意思的一个题。刚拿到这题的时候，完全不知道从那下手，因为对于BST是否Unique，很难判断。最后引入了一个条件以后，立即就清晰了，即
+	 * 当数组为 1，2，3，4，.. i，.. n时，基于以下原则的BST建树具有唯一性： 以i为根节点的树，其左子树由[0, i-1]构成，
+	 * 其右子树由[i+1, n]构成。
+	 */
+
+	public int numTrees(int n) {
+		if (n == 0 || n == 1)
+			return 1;
+		int[] d = new int[n + 1];
+		d[0] = 1;
+		d[1] = 1;
+		for (int i = 2; i <= n; i++) {
+			for (int k = 0; k < i; k++)
+				d[i] += d[k] * d[i - 1 - k];
+		}
+		return d[n];
+	}
+
+	/**
+	 * No. 95 generate all unique BST Trees Given node k (from start to end),
+	 * leftSubs = generate(start, k - 1); rightSubs = generate(k + 1, end); for
+	 * (left : leftSubs) for (right : rightSubs) { TreeNode node = new
+	 * TreeNode(k); node.left = left; node.right = right; }
+	 */
+
+	public List<TreeNode> generateTrees(int n) {
+		return generate(1, n);
+	}
+
+	private List<TreeNode> generate(int start, int end) {
+		List<TreeNode> subTree = new ArrayList<>();
+
+		if (start > end) {
+			subTree.add(null);
+			return subTree;
+		}
+
+		for (int k = start; k <= end; k++) {
+			List<TreeNode> leftSubs = generate(start, k - 1);
+			List<TreeNode> rightSubs = generate(k + 1, end);
+			for (TreeNode left : leftSubs) {
+				for (TreeNode right : rightSubs) {
+					TreeNode node = new TreeNode(k);
+					node.left = left;
+					node.right = right;
+					subTree.add(node);
+				}
+			}
+		}
+
+		return subTree;
+	}
+
+	/**
+	 * No. 101 Given a binary tree, check whether it is a mirror of itself (ie,
+	 * symmetric around its center).
+	 * 
+	 * For example, this binary tree is symmetric:
+	 * 
+	 * 1 / \ 2 2 / \ / \ 3 4 4 3 But the following is not: 1 / \ 2 2 \ \ 3 3
+	 */
+
+	public boolean isSymmetric(TreeNode root) {
+		if (root == null)
+			return true;
+		return isSymmetric(root.left, root.right);
+	}
+
+	private boolean isSymmetric(TreeNode left, TreeNode right) {
+		if (left == null && right == null)
+			return true;
+		if (left == null || right == null || left.val != right.val)
+			return false;
+		return isSymmetric(left.left, right.right)
+				&& isSymmetric(left.right, right.left);
+	}
+
+	/*
+	 * 100. Same Tree Given two binary trees, write a function to check if they
+	 * are equal or not.
+	 * 
+	 * Two binary trees are considered equal if they are structurally identical
+	 * and the nodes have the same value.
+	 */
+
+	public boolean isSameTree(TreeNode p, TreeNode q) {
+		if (p == null && q == null)
+			return true;
+		if (p == null || q == null || p.val != q.val)
+			return false;
+
+		return isSameTree(p.left, q.left) && isSameTree(p.right, q.right);
+
+	}
+
+	/**
+	 * 235. Lowest Common Ancestor of a Binary Search Tree
+	 */
+
+	public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+
+		while (root != null) {
+			int value = root.val;
+			if (value > p.val && value > q.val)
+				root = root.left;
+			else if (value < p.val && value < q.val)
+				root = root.right;
+			else
+				return root;
+		}
+
+		return null;
+	}
+
+	/**
+	 * No. 226 Invert a tree.
+	 * 
+	 * @param root
+	 * @return
+	 */
+
+	public TreeNode invertTree(TreeNode root) {
+		if (root == null)
+			return null;
+		TreeNode left = invertTree(root.right);
+		TreeNode right = invertTree(root.left);
+		root.left = left;
+		root.right = right;
+		return root;
+	}
+
+	
+	/**
+	 * Serialize a Binary Search Tree //http://articles.leetcode.com/2010/09/saving-binary-search-tree-to-file.html
+	 * 
+	 * Using PreOrder to write into file and read PreOrder to build a tree by using
+	 * the method that checking if BST is valid BST method using min and max range. 
+	 * @throws IOException 
+	 */
+	
+	
+	void readBSTHelper(int min, int max, int insertVal,
+            TreeNode p, InputStream fin) throws IOException {
+	if (insertVal > min && insertVal < max) {
+		int val = insertVal;
+		p = new TreeNode(val);
+		val = fin.read();
+		if (val != -1) {
+			readBSTHelper(min, val, insertVal, p.left, fin);
+			readBSTHelper(val, max, insertVal, p.right, fin);
+		}
+	}
+}
+
+void readBST(TreeNode root, InputStream fin) {
+	int val;
+	try {
+		val = fin.read();
+		readBSTHelper(Integer.MIN_VALUE, Integer.MAX_VALUE, val, root, fin);
+	} catch (IOException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	} 
+	
+}
+	
+/**
+ * Serialize a Binary Tree
+ * @throws IOException 
+ */
+
+
+void writeBinaryTree(TreeNode p, OutputStream out) throws IOException {
+  if (p == null) {
+    out.write('#');
+  } else {
+    out.write(p.val);
+    writeBinaryTree(p.left, out);
+    writeBinaryTree(p.right, out);
+  }
+}
+
+
+
+    /**
+     * This method will be invoked first, you should design your own algorithm
+     * to serialize a binary tree which denote by a root node to a string which
+     * can be easily deserialized by your own "deserialize" method later.
+     */
+
+    // Encodes a tree to a single string.
+    public String serialize(TreeNode root) {
+        StringBuilder sb = new StringBuilder();
+        serialize_buildString(root, sb);
+        return sb.toString();
+    }
+
+    private void serialize_buildString(TreeNode node, StringBuilder sb) {
+        if (node == null) {
+            sb.append("#").append(",");
+        } else {
+            sb.append(node.val).append(",");
+            serialize_buildString(node.left, sb);
+            serialize_buildString(node.right,sb);
+        }
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        LinkedList<String> nodes = new LinkedList<>();
+        nodes.addAll(Arrays.asList(data.split(",")));
+        return deserialize_buildTree(nodes);
+    }
+
+    private TreeNode deserialize_buildTree(LinkedList<String> nodes) {
+        String val = nodes.poll();
+        if (val.equals("#")) return null;
+        else {
+            TreeNode node = new TreeNode(Integer.valueOf(val));
+            node.left = deserialize_buildTree(nodes);
+            node.right = deserialize_buildTree(nodes);
+            return node;
+        }
+    }
+
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+//		TreeNode node = new TreeNode(3);
+//		node.left = new TreeNode(1);
+//		node.right = new TreeNode(2);
+//		// node.left.left = new TreeNode(4);
+//		// node.left.right = new TreeNode(5);
+//
+//		TreeStruct ts = new TreeStruct();
+//		// ts.levelOrder(node);
+//		System.out.println(ts.preorderTraversal(node));
+		System.out.print(1<<2);
+	}
+
+}

@@ -1,0 +1,156 @@
+package com.interview.general.backtracking;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.*;
+public class dfs {
+	
+	/**
+	 * word ladder
+	 */
+	
+	   public List<List<String>> findLadders(String beginWord, String endWord, Set<String> wordList) {
+	        List<List<String>> result = new ArrayList<List<String>> ();
+	        List<String> res = new LinkedList <String>();
+	        if(wordList == null || beginWord == null || endWord == null) return result;
+	        
+	        int len = beginWord.length();
+	        Set <String> set = new HashSet<String> ();
+	        Map <String, List<String>> m_word_list = new HashMap <String, LinkedList<String>>();
+	        Map <String, Integer> m_word_depth = new HashMap <String, Integer>();
+	        
+	        //helper(result,res, beginWord, endWord, wordList, len, map);
+	        Queue <String> q = new LinkedList <String> ();
+	        q.add(beginWord);
+	        wordList.add(endWord);
+	        
+	        
+	        int minDepth = Integer.MAX_VALUE;
+	        
+	        while(!q.isEmpty()){
+	            String cur = q.poll();
+	            int curDepth = m_word_depth.get(cur);
+	            if(curDepth >= minDepth) continue;
+	            if(cur.equals(endWord)){
+                   minDepth = Math.min(minDepth, currDepth);
+                   continue;
+	            }
+
+	            List<String> neighbors = getNeighbors(cur,wordList,m_word_flag);
+	            if(neighbors.size() == 0) {
+	                continue;
+	            }
+	            for(String nei : neighbors){
+	                m_word_depth.put(nei, curDepth+1);
+	                q.add(nei);
+	                if(m_word_list.containskey(nei)){
+	                    m_word_list.get(nei).add(cur);
+	                }else{
+	                    List<String> t_list = new LinkedList<String>();
+	                    t_list.add(curr);
+	                    m_word_list.put(nei,t_list);
+	                }
+	            }
+	            
+	        }
+	        
+	        
+	        // trace back
+	        
+	        if(!m_word_list.containskey(endWord)){
+	            return result;
+	        }else{
+	            List<String> list = new LinkedList<String>():
+	            list.add(endWord);
+	            reverse(endWord,startWord,result,m_word_list, list);
+	        }
+	        
+	        
+	        
+	        return result;
+	    }
+	    
+	    public void reverse(Stirng end, String start, List<List<String>> result,  Map <String, List<String>> m_word_list, List<String> tempList){
+	        if(end.equals(start)){
+	            result.add(tempList);
+	            return;
+	        }
+	        List<String> pre = m_word_list.get(end);
+	        for(String word : pre){
+	            tempList.add(word);
+	            reverse(word, start, result, m_word_list, tempList);
+	            tempList.remove(tempList.size()-1);
+	        }
+	        
+	    }
+	    
+	    
+	    public List<String> getNeighbor(String cur, Set<String> wordList,  Set <String> set){
+	        List<String> res = new LinkedList<String>():
+	        for(int j = 0; j < cur.length(); j++){
+	            char [] cur_arr = cur.toCharArray();
+	            for(char i = 'a'; i <= 'z'; i++){
+	                if(i != cur_arr[j]){
+	                    cur_arr[j] = i;
+	                    String temp = new String(cur_arr);
+	                    if(wordList.contains(temp) && !set.contains(set)){
+	                        res.add(temp);
+	                    }
+	                }
+	            }
+	        }
+	        
+	        
+	        return res;
+	        
+	    }
+	    
+	    
+
+	
+	/**
+	 * Generate Parentheses
+	 * Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.
+	For example, given n = 3, a solution set is:
+	"((()))", "(()())", "(())()", "()(())", "()()()"
+
+	DFS: Time ~ O(N!), Space ~ O(N) 
+	递归中记录左右括号的数量分别为 left 和 right，有三种情况：
+	如果 left == n，表明只加右括号至 right == n 即可；
+	如果 left != n 但 left == right，表明之前的括号已成对，只能加 '('；
+	如果上述情况皆不满足，则可以加 '(' 也可以加 ')'，注意在试完加 '(' 后再试加 ')' 前，要将之前的加入的括号都删除（用一个 int 记住加 '(' 的位置）。
+	注意：因为有第二种情况限制，但 right == left 时只加 '('，所以不会出现 right > left 的情况。
+	 */
+	public List<String> generateParenthesis(int n) {
+	    List<String> list = new ArrayList<>();
+	    addUp(n, 0, 0, new StringBuilder(), list);
+	    return list;
+	}
+
+	private void addUp(int n, int left, int right, StringBuilder str, List<String> list) {
+	    if (left == n) {
+	        while (right < n) {
+	            str.append(')');
+	            right++;
+	        }
+	        list.add(str.toString());
+	    } else if (left == right) { // the parenthese in str are pairs, only add '('
+	        addUp(n, left + 1, right, str.append('('), list);
+	    } else { // the parenthese in str are not pairs, we can either add '(' or ')'
+	        // try to add '('
+	        int len = str.length();
+	        addUp(n, left + 1, right, str.append('('), list);
+	        // try to add ')'
+	        str.delete(len, str.length()); // remove the parenthese generated in the previous line
+	        addUp(n, left, right + 1, str.append(')'), list);
+	    }
+	}
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+	}
+
+}

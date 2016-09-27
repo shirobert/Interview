@@ -1,0 +1,823 @@
+package com.interview.string;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+public class StrFun {
+	
+	
+	/**
+	 * No.205
+	 * Given two strings s and t, determine if they are isomorphic.
+
+Two strings are isomorphic if the characters in s can be replaced to get t.
+
+All occurrences of a character must be replaced with another character while preserving the order of characters. No two characters may map to the same character but a character may map to itself.
+
+For example,
+Given "egg", "add", return true.
+
+Given "foo", "bar", return false.
+
+Given "paper", "title", return true.
+
+Hash Table: Time ~ O(2N), Space ~ O(26) 
+判断两个 String 是否同构：将 s 的每个字母替换成 t 中对应位置的字母，如果同一字母对应多个替换字母，则不是同构；同样要将 t 替换成 s，判断其是否存在一对多的对应。如果 s -> t 和 t -> s 中的字母替换都是一一对应，则 s 和 t 为同构。
+	 */
+	public boolean isIsomorphic(String s, String t) {
+	    int n = s.length(), nt = t.length();
+	    if (n != nt)    return false;
+	    
+	    // change s to t 
+	    Map<Character, Character> map = new HashMap<>();
+	    for (int i = 0; i < n; i++) {
+	        char cs = s.charAt(i), ct = t.charAt(i);
+	        if (!map.containsKey(cs))   map.put(cs, ct);
+	        else if (map.get(cs) != ct) return false;
+	    }
+	    
+	    // change t to s
+	    map.clear();
+	    for (int i = 0; i < n; i++) {
+	        char cs = s.charAt(i), ct = t.charAt(i);
+	        if (!map.containsKey(ct))   map.put(ct, cs);
+	        else if (map.get(ct) != cs) return false;
+	    }
+	    
+	    return true;
+	}
+	/**
+	 * No. 214
+	 * Shortest Palindrome
+	 * 从中间 s[ (n - 1) / 2] 处开始向左（右边的不用考虑）对每个字符 expand，奇偶的情况都要考虑，如果遇到 palindrome 即为 LPS（因为之后搜到的长度只会更短）。然后将 LPS 之后的 substring 反转加在 s 的前面。
+该方法虽然对上题的 Two Pointers 进行了改进，但时间依然是 O(N^2) worst-case，所以不能通过 OJ 中有一个包含大量重复字母的 case。
+	 */
+	public String shortestPalindrome(String s) {
+	    int n = s.length();
+	    if (n == 0) return s;
+	    
+	    int end = 0;
+	    for (int i = (n - 1) / 2; i >= 0; i--) {
+	        if (isPalindrome(s, 0, 2 * i)) { // [0..i-1] i [i+1..2i]
+	            end = 2 * i + 1;
+	            break;
+	        }
+	        if (isPalindrome(s, 0, 2 * i - 1)) {   // [0..i-1] [i..2i-1]
+	            end = 2 * i;
+	            break;
+	        }
+	    }
+	    if (end == n) return s;
+	    StringBuilder str = new StringBuilder(s.substring(end));
+	    str.reverse();
+	    str.append(s);
+	    return str.toString();
+	}
+
+	private boolean isPalindrome(String s, int left, int right) { // shrink from two side
+	    while (left < right && s.charAt(left) == s.charAt(right)) {
+	        left++;
+	        right--;
+	    }
+	    if (left < right)   return false;
+	    else                return true;
+	}
+	/**
+	 * Longest Palindrome
+	 * palindrome 分两种情况，奇数字符和偶数字符。
+选定一个 character，然后以其为中心向两边搜索。
+odd palindrome: expandAroundCenter(s, i, i);
+even palindrome: expandAroundCenter(s, i, i + 1).
+	 * @param str
+	 * @return
+	 */
+	
+	public String longestPalindrome(String s) {
+	    int start = 0, end = 0;
+	    for (int i = 0; i < s.length(); i++) {
+	        int len1 = expandAroundCenter(s, i, i);
+	        int len2 = expandAroundCenter(s, i, i + 1);
+	        int len = Math.max(len1, len2);
+	        if (len > end - start) {
+	            start = i - (len - 1) / 2;
+	            end = i + len / 2 + 1;
+	        }
+	    }
+	    return s.substring(start, end);
+	}
+
+	private int expandAroundCenter(String s, int left, int right) {
+	    int L = left, R = right;
+	    while (L >= 0 && R < s.length() && s.charAt(L) == s.charAt(R)) {
+	        L--; R++;
+	    }
+	    return (R - 1) - (L + 1) + 1;
+	}
+
+	
+	/* No. 125
+	 * Given a string, determine if it is a palindrome, considering only
+	 * alphanumeric characters and ignoring cases. For example,
+	 * "A man, a plan, a canal: Panama" is a palindrome. "race a car" is not a
+	 * palindrome.
+	 */
+	public boolean isPalindrome(String str) {
+		int i = 0, j = str.length() - 1;
+		while (i < j) {
+			while (i < j && !Character.isLetterOrDigit(str.charAt(i)))
+				i++;
+			while (i < j && !Character.isLetterOrDigit(str.charAt(j)))
+				j--;
+			char head = str.charAt(i);
+			char tail = str.charAt(j);
+			if (head != tail)
+				return false;
+			i++;
+			j--;
+		}
+		return true;
+
+	}
+
+	/**
+	 * implement strstr
+	 */
+
+	public int strStr(String haystack, String needle) {
+		for (int i = 0;; i++) {
+			for (int j = 0;; j++) {
+				if (j == needle.length())
+					return i;
+				if (i + j == haystack.length())
+					return -1;
+				if (needle.charAt(j) != haystack.charAt(i + j))
+					break;
+			}
+		}
+	}
+
+	/**
+	 * int Data to String
+	 * 
+	 * for example 19810707 to 07/07/1981
+	 */
+
+	public String intDataToString(int num) {
+		StringBuilder sb = new StringBuilder();
+		int year = num / 10000;
+		num = num % 10000;
+		int day = num % 100;
+		int month = num / 100;
+
+		if (month < 10) {
+			sb.append("0");
+		}
+		sb.append(String.valueOf(month));
+		sb.append("/");
+		if (day < 10)
+			sb.append("0");
+		sb.append(String.valueOf(day));
+		sb.append("/");
+
+		sb.append(year);
+
+		return sb.toString();
+	}
+
+	/**
+	 * No. 49 Anagrams get all te anagrams from a collection of words
+	 * 
+	 */
+
+	public Map<String, ArrayList<String>> getAllAnagrams(List<String> words) {
+		Map<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>();
+		for (String str : words) {
+			char[] temp = str.toCharArray();
+			Arrays.sort(temp);
+			System.out.println(temp);
+			if (map.containsKey(temp.toString())) {
+				map.get(temp.toString()).add(str);
+			} else {
+				ArrayList<String> al = new ArrayList<String>();
+				al.add(str);
+				map.put(temp.toString(), al);
+			}
+
+		}
+
+		return map;
+	}
+
+	/**
+	 * No 38 Count and Say The count-and-say sequence is the sequence of
+	 * integers beginning as follows: 1, 11, 21, 1211, 111221, ...
+	 * 
+	 * 1 is read off as "one 1" or 11. 11 is read off as "two 1s" or 21. 21 is
+	 * read off as "one 2, then one 1" or 1211. Given an integer n, generate the
+	 * nth sequence.
+	 * 
+	 * Note: The sequence of integers will be represented as a string.
+	 * 
+	 * @param n
+	 * @return
+	 */
+	public String countAndSay(int n) {
+		if (n <= 0)
+			return null;
+		String num = "1";
+		for (int j = 1; j < n; j++) {
+			int i = 0;
+			char index = num.charAt(i);
+			int count = 0;
+			StringBuilder sb = new StringBuilder();
+			while (i < num.length()) {
+				if (num.charAt(i) == index) {
+					count++;
+				} else {
+					sb.append(Integer.toString(count));
+					sb.append(index);
+					index = num.charAt(i);
+					count = 1;
+				}
+				i++;
+			}
+			sb.append(Integer.toString(count));
+			sb.append(index);
+			num = sb.toString();
+		}
+		return num;
+
+	}
+
+	// recursive method
+	public String countAndSay2(int n) {
+		if (n <= 0)
+			return null;
+		if (n == 1)
+			return "1";
+		String num = countAndSay2(n - 1);
+
+		int i = 0;
+		char index = num.charAt(i);
+		int count = 0;
+		StringBuilder sb = new StringBuilder();
+		while (i < num.length()) {
+			if (num.charAt(i) == index) {
+				count++;
+			} else {
+				sb.append(Integer.toString(count));
+				sb.append(index);
+				index = num.charAt(i);
+				count = 1;
+			}
+			i++;
+		}
+		sb.append(Integer.toString(count));
+		sb.append(index);
+		return sb.toString();
+	}
+
+	public String longestCommonPrefix(String[] strs) {
+
+		StringBuilder sb = new StringBuilder();
+		if (strs == null || strs.length == 0)
+			return "";
+		String str1 = strs[0];
+		boolean flag = true;
+		
+		for (int i = 0; i < str1.length(); i++) {
+			for (int j = 1; j < strs.length; j++) {
+				if(strs[j].length() < i+1) {
+					flag = false;
+					break;
+				};
+				if(str1.charAt(i) == strs[j].charAt(i)) continue;
+				else {
+					flag = false;
+					break;
+				}
+			}
+			if(flag) sb.append(str1.charAt(i));
+			else break;
+		}
+		
+		return sb.toString();
+
+	}
+
+	/**
+	 * No. 165 Compare Version Numbers Compare two version numbers version1 and
+	 * version2. If version1 > version2 return 1, if version1 < version2 return
+	 * -1, otherwise return 0.
+	 * 
+	 * You may assume that the version strings are non-empty and contain only
+	 * digits and the . character. The . character does not represent a decimal
+	 * point and is used to separate number sequences. For instance, 2.5 is not
+	 * "two and a half" or "half way to version three", it is the fifth
+	 * second-level revision of the second first-level revision.
+	 * 
+	 * Here is an example of version numbers ordering:
+	 * 
+	 * 0.1 < 1.1 < 1.2 < 13.37
+	 */
+
+	public int compareVersion(String version1, String version2) {
+		String[] v1 = version1.split("\\.");
+		String[] v2 = version2.split("\\.");
+		int length = (v1.length >= v2.length ? v2.length : v1.length);
+		for (int i = 0; i < length; i++) {
+			if (Integer.valueOf(v1[i]) > Integer.valueOf(v2[i]))
+				return 1;
+			else if (Integer.valueOf(v1[i]) < Integer.valueOf(v2[i]))
+				return -1;
+		}
+		if (v1.length > v2.length && Integer.valueOf(v1[length]) > 0)
+			return 1;
+		else if (v1.length < v2.length && Integer.valueOf(v2[length]) > 0)
+			return -1;
+		else
+			return 0;
+	}
+
+	/**
+	 * 
+	 * Given an input string s, reverse the string word by word.
+	 */
+
+	public String reverseStr(String str) {
+		StringBuilder reverse = new StringBuilder();
+		str.trim();
+
+		int j = str.length();
+		for (int i = str.length() - 1; i == 0; i--) {
+			if (str.charAt(i) == ' ') {
+				j = i;
+			} else if (i == 0 || str.charAt(i - 1) == ' ') {
+				reverse.append(str.substring(i, j));
+			}
+		}
+
+		return reverse.toString();
+	}
+
+	/**
+	 * reverse string in-place without allocating extra space.
+	 */
+
+	public void reverseWords(char[] s) {
+		reverse(s, 0, s.length);
+		for (int i = 0, j = 0; j <= s.length; j++) {
+			if (j == s.length || s[j] == ' ') {
+				reverse(s, i, j);
+				i = j + 1;
+			}
+		}
+	}
+
+	private void reverse(char[] s, int begin, int end) {
+		for (int i = 0; i < (end - begin) / 2; i++) {
+			char temp = s[begin + i];
+			s[begin + i] = s[end - i - 1];
+			s[end - i - 1] = temp;
+		}
+	}
+
+	/**
+	 * convert string to number The atoi function first discards as many
+	 * whitespace characters as necessary until the first non-whitespace
+	 * character is found. Then, starting from this character, takes an optional
+	 * initial plus or minus sign followed by as many numerical digits as
+	 * possible, and interprets them as a numerical value. The string can
+	 * contain additional characters after those that form the integral number,
+	 * which are ignored and have no effect on the behavior of this function. If
+	 * the first sequence of non-whitespace characters in str is not a valid
+	 * integral number, or if no such sequence exists because either str is
+	 * empty or it contains only whitespace characters, no conversion is
+	 * performed. If no valid conversion could be performed, a zero value is
+	 * returned. If the correct value is out of the range of representable
+	 * values, the maximum integer value (2147483647) or the minimum integer
+	 * value (–2147483648) is returned.
+	 * 
+	 * @param str
+	 * @return
+	 */
+	public int atoi(String str) {
+
+		int maxDiv10 = Integer.MAX_VALUE / 10;
+		if (str == null)
+			return 0;
+		str = str.trim();
+		if (str.length() == 0)
+			return 0;
+
+		int flag = 1;
+		int i = 0;
+		if (str.charAt(0) == '-') {
+			i++;
+			flag = -1;
+		} else if (str.charAt(0) == '+') {
+			i++;
+		}
+		int value = 0;
+		while (i < str.length() && Character.isDigit(str.charAt(i))) {
+			// pay attention to the overflow
+			if (value > maxDiv10 || value == maxDiv10
+					&& Character.getNumericValue(str.charAt(i)) >= 8) {
+				return flag == 1 ? Integer.MAX_VALUE : Integer.MIN_VALUE;
+			}
+
+			value = value * 10 + Character.getNumericValue(str.charAt(i));
+			i++;
+		}
+
+		return value * flag;
+	}
+
+	/**
+	 * Validate if a given string is numeric. "0" -> true, "0.1" -> true, "abc"
+	 * -> false. Q: How to account for whitespaces in the string? A: When
+	 * deciding if a string is numeric, ignore both leading and trailing
+	 * whitespaces. Q: Should I ignore spaces in between numbers – such as “1
+	 * 1”? A: No, only ignore leading and trailing whitespaces. “1 1” is not
+	 * numeric. Q: If the string contains additional characters after a number,
+	 * is it considered valid? A: No. If the string contains any non-numeric
+	 * characters (excluding whitespaces and decimal point), it is not numeric.
+	 * Q: Is it valid if a plus or minus sign appear before the number? A: Yes.
+	 * “+1” and “-1” are both numeric. Q: Should I consider only numbers in
+	 * decimal? How about numbers in other bases such as hexadecimal (0xFF)? A:
+	 * Only consider decimal numbers. “0xFF” is not numeric. Q: Should I
+	 * consider exponent such as “1e10” as numeric? A: No. But feel free to work
+	 * on the challenge that takes exponent into consideration. (The Online
+	 * Judge problem does take exponent into account.)
+	 */
+
+	public boolean isNumber(String str) {
+		int i = 0, n = str.length();
+		while (i < n && Character.isWhitespace(str.charAt(i)))
+			i++;
+		if (i < n && (str.charAt(i) == '+' || str.charAt(i) == '-'))
+			i++;
+		boolean isNum = false;
+		while (i < n && Character.isDigit(str.charAt(i))) {
+			i++;
+			isNum = true;
+		}
+		if (i < n && (str.charAt(i) == '.' || str.charAt(i) == 'e')) {
+			i++;
+			while (i < n && Character.isDigit(str.charAt(i))) {
+				i++;
+				isNum = true;
+			}
+		}
+
+		// if (isNum && i < n && str.charAt(i) == 'e') {
+		// i++;
+		// isNum = false;
+		// if (i < n && (str.charAt(i) == '+' || str.charAt(i) == '-'))
+		// i++;
+		// while (i < n && Character.isDigit(str.charAt(i))) {
+		// i++;
+		// isNum = true;
+		// }
+		// }
+		while (i < n && Character.isWhitespace(str.charAt(i)))
+			i++;
+		return isNum && i == n;
+	}
+
+	/**
+	 * Given a string, find the length of the longest substring without
+	 * repeating characters. For example, the longest substring without
+	 * repeating letters for “abcabcbb” is “abc”, which the length is 3. For
+	 * “bbbbb” the longest substring is “b”, with the length of 1.
+	 * 
+	 * two methods: 1. How can we look up if a character exists in a substring
+	 * instantaneously? The answer is to use a simple table to store the
+	 * characters that have appeared. Make sure you communicate with your
+	 * interviewer if the string can have characters other than ‘a’–‘z’. (ie,
+	 * Digits? Upper case letter? Does it contain ASCII characters only? Or even
+	 * unicode character sets?) 2. Instead of using a table to tell if a
+	 * character exists or not, we could define a mapping of the characters to
+	 * its index. Then we can skip the characters immediately when we found a
+	 * repeated character.
+	 */
+
+	public int lengthOfLongestSubstring(String s) {
+		int[] charMap = new int[256];
+		Arrays.fill(charMap, -1);
+		int i = 0, maxLen = 0;
+		for (int j = 0; j < s.length(); j++) {
+			if (charMap[s.charAt(j)] >= i) {
+				i = charMap[s.charAt(j)] + 1;
+			}
+			charMap[s.charAt(j)] = j;
+			maxLen = Math.max(j - i + 1, maxLen);
+		}
+		return maxLen;
+	}
+
+	/**
+	 * No. 67 add Binary Given two binary strings, return their sum (also a
+	 * binary string).
+	 * 
+	 * For example, a = "11" b = "1" Return "100".
+	 */
+
+	public String addBinary(String a, String b) {
+		StringBuilder sb = new StringBuilder();
+		if (a == null || a.length() == 0)
+			return b;
+		if (b == null || b.length() == 0)
+			return a;
+		int i = a.length() - 1;
+		int j = b.length() - 1;
+		char c_i;
+		char c_j;
+		char carryover = '0';
+		while (true) {
+			if (i < 0 && j < 0)
+				break;
+			if (i >= 0)
+				c_i = a.charAt(i);
+			else
+				c_i = '0';
+			if (j >= 0)
+				c_j = b.charAt(j);
+			else
+				c_j = '0';
+
+			int temp = Integer.parseInt(Character.toString(c_i))
+					+ Integer.parseInt(Character.toString(c_j))
+					+ Integer.parseInt(Character.toString(carryover));
+
+			int leftover = temp % 2;
+			carryover = (char) ('0' + temp / 2);
+
+			sb.insert(0, leftover);
+			i--;
+			j--;
+
+		}
+		if (carryover == '1')
+			sb.insert(0, carryover);
+
+		return sb.toString();
+	}
+
+	/**
+	 * Permutate String 
+	 * Implement a routine that prints all possible orderings of the characters in a string.
+ * In other words, print all permutations that use all the characters from the original string.
+	 */
+	
+	public void permuate(String str){
+		int length = str.length();
+		int level = 0;
+		char [] in = str.toCharArray();
+		String out = new String();
+		boolean [] map = new boolean[length];
+		getPermuate(in, out, length, level, map);
+	}
+	
+	private void getPermuate(char[] in, String out, int length, int level, boolean[] map) {
+		if(level == length){
+			System.out.println(out.toString());
+			return;
+		}
+		for(int i = 0; i<length ; i++){
+			if(map[i] == true) continue;
+			map[i] = true;
+			out = out + in[i];
+			getPermuate(in, out, length, level+1, map);
+			map[i] = false;
+			out = out.substring(0, out.length()-1) ;
+		}
+		
+	}
+
+/**
+ *  do combination of the string
+ *  Implement a function that prints all possible combinations of the characters in a string.
+ * These combinations range in length from one to the length of the string.
+ * Two combinations that differ only in ordering of their characters are the same combination.	
+ */
+	
+	public void combination(String str){
+		int length = str.length();
+		char [] in = str.toCharArray();
+		String out = new String();
+		int level = 0;
+		getCombination(in,out,level,length);
+	}
+	
+	private void getCombination(char[] in, String out, int level, int length) {
+		for(int i = level; i< length ; i++){
+			out += in[i];
+			System.out.println(out.toString());
+			
+			if(i+1 <length){
+				getCombination(in, out, i+1, length);
+			}
+			out = out.substring(0, out.length()-1);
+		}
+	
+}
+
+	/**
+	 * int read4(char *buf) reads 4 characters at a time from a file. The return
+	 * value is the actual number of characters read. For example, it returns 3
+	 * if there is only 3 characters left in the file. By using the read4 API,
+	 * implement the function int read(char *buf, int n) that reads n characters
+	 * from the file.
+	 * 
+	 * @param buf
+	 *            Destination buffer
+	 * @param n
+	 *            Maximum number of characters to read
+	 * @return The number of characters read
+	 */
+	public int read4(char[] buf) {
+		return 0;
+	}
+
+	public int read(char[] buf, int n) {
+		char[] buffer = new char[4];
+		int readBytes = 0;
+		boolean eof = false;
+		while (!eof && readBytes < n) {
+			int sz = read4(buffer);
+			if (sz < 4)
+				eof = true;
+			int bytes = Math.min(n - readBytes, sz);
+			System.arraycopy(buffer /* src */, 0 /* srcPos */, buf /* dest */,
+					readBytes /* destPos */, bytes /* length */);
+			readBytes += bytes;
+		}
+		return readBytes;
+	}
+
+	
+	/**
+	 * No. 169
+	 * Given an array of size n, find the majority element. The majority element is the element that appears more than ⌊ n/2 ⌋ times.
+
+You may assume that the array is non-empty and the majority element always exist in the array.
+	 */
+	 public int majorityElement(int[] nums) {
+         int value = 0; 
+    int result = 0;
+    for (int i = 0; i < nums.length; i++)
+    {
+        if (value == nums[i])
+        {
+            result++;
+        }
+        else
+        {
+            if (result > 0)
+                result--;
+            else
+            {
+                result++;
+                value = nums[i];
+            }   
+        }
+    }
+    return value;
+    }
+	/**
+	 * No.187
+	 *All DNA is composed of a series of nucleotides abbreviated as A, C, G, and T, for example: "ACGAATTCCG". When studying DNA, it is sometimes useful to identify repeated sequences within the DNA.
+
+Write a function to find all the 10-letter-long sequences (substrings) that occur more than once in a DNA molecule.
+
+For example,
+
+Given s = "AAAAACCCCCAAAAACCCCCCAAAAAGGGTTT",
+
+Return:
+["AAAAACCCCC", "CCCCCAAAAA"].
+	 */
+	
+	public List<String> findRepeatedDnaSequences(String s) {
+        List<String> res = new ArrayList<String>();
+        HashSet<String> strSet = new HashSet<String>();
+        HashSet<Integer> numSet = new HashSet<Integer>();
+        for(int i=0; i<s.length() - 9; i++) {
+
+            String substr = s.substring(i, i + 10);
+            int curNum = encode(substr);
+            if(!numSet.contains(curNum)) {
+                numSet.add(curNum);
+            } else {
+                strSet.add(substr);
+            }
+        }
+        for(String str : strSet) {
+            res.add(str);
+        }
+        return res;
+    }
+    public int encode(String s) {//Use bit manipulation to avoid MLE
+        int sum = 0;
+        for(int i=0; i<s.length(); i++) {
+            if(s.charAt(i) == 'A') {
+                sum *= 4;
+            } else if(s.charAt(i) == 'C') {
+                sum = sum * 4 + 1;
+            } else if(s.charAt(i) == 'G') {
+                sum = sum * 4 + 2;
+            } else if(s.charAt(i) == 'T') {
+                sum = sum * 4 + 3;
+            }
+        }
+        return sum;
+    }
+    
+    
+    /**No. 76
+     * Given a string S and a string T, find the minimum window in S which will contain all the characters in T in complexity O(n).
+
+For example,
+S = "ADOBECODEBANC"
+T = "ABC"
+Minimum window is "BANC".
+
+Note:
+If there is no such window in S that covers all characters in T, return the emtpy string "".
+
+If there are multiple such windows, you are guaranteed that there will always be only one unique minimum window in S.
+    
+    
+    
+     */
+   /* 
+    *  have to maintain two arrays one is to check T, the other is to check S. one array or map is not working,
+    *  Because for case like "bba", "ab", you have to check the counts of how many you have seen for charactoer "b"
+    *  
+    */
+ 
+    
+    public String minWindow(String S, String T) {
+        if(S==null||S.isEmpty()||T==null||T.isEmpty()) return "";
+        int i=0, j=0;
+        int[] Tmap=new int[256];
+        int[] Smap=new int[256];
+        for(int k=0; k< T.length(); k++){
+            Tmap[T.charAt(k)]++;
+        }
+        int found=0;
+        int length=Integer.MAX_VALUE;
+        String res="";
+        while(j<S.length()){
+            if(found<T.length()){
+                if(Tmap[S.charAt(j)]>0){
+                    Smap[S.charAt(j)]++;
+                    if(Smap[S.charAt(j)]<=Tmap[S.charAt(j)]){
+                        found++;
+                    }
+                }
+                j++;
+            }
+            while(found==T.length()){
+                if(j-i<length){
+                    length=j-i; res=S.substring(i,j);
+                }
+                if(Tmap[S.charAt(i)]>0){
+                    Smap[S.charAt(i)]--;
+                    if(Smap[S.charAt(i)]<Tmap[S.charAt(i)]){
+                        found--;
+                    }
+                }
+                i++;
+            }
+        }
+        return res;
+    }
+    
+	/**
+	 * 
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		StrFun sf = new StrFun();
+		ArrayList<String> al = new ArrayList<String>(Arrays.asList("abc",
+				"cba", "123", "342", "321"));
+//		System.out.println(sf.getAllAnagrams(al));
+//		sf.permuate("1234");
+		sf.combination("123");
+		
+		HashMap<Character, Integer> map = new HashMap<Character, Integer>();
+		map.put('a', 1);
+		map.put('b', 2);
+		
+		System.out.println(map.get('a'));
+
+	}
+
+}

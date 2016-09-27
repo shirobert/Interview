@@ -1,0 +1,28 @@
+package mixed;
+
+public class DynamicPro {
+
+	/*A robot is located at the top-left corner of a m x n grid (marked 'Start' in the diagram below).
+
+The robot can only move either down or right at any point in time. The robot is trying to reach the bottom-right corner of the grid (marked 'Finish' in the diagram below).
+
+How many possible unique paths are there?
+	
+       */
+	
+	public int uniquePaths(int m, int n) {
+		
+		int [][] mat = new int[m+1][n+1];
+		
+		return 0;
+	}
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+
+	}
+
+}

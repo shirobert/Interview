@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename compilation unit &apos;com.interview.general.backtracking.dfs.java&apos; to &apos;DFS.java&apos;&#x0A;- Original project: &apos;Int&apos;&#x0A;- Original element: &apos;com.interview.general.backtracking.dfs.java&apos;&#x0A;- Renamed element: &apos;com.interview.general.backtracking.DFS.java&apos;" description="Rename compilation unit &apos;dfs.java&apos;" flags="2" id="org.eclipse.jdt.ui.rename.compilationunit" input="/src&lt;com.interview.general.backtracking{dfs.java" name="DFS.java" references="false" stamp="1455397257503" version="1.0"/>
+</session>

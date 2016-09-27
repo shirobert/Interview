@@ -1,0 +1,992 @@
+package com.interview.number;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.PriorityQueue;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeSet;
+
+public class Numbers {
+	
+	
+
+/**
+ * rotate array
+ * 	
+ */
+
+	public void rotate(int[] nums, int k) {
+	    k = k % nums.length;
+	    // A (len = n-k), B (len = k)
+	    // rev(rev(A)rev(B)) = BA
+	    reversal(nums, 0, nums.length - k - 1);
+	    reversal(nums, nums.length - k, nums.length - 1);
+	    reversal(nums, 0, nums.length - 1);
+	}
+
+	private void reversal(int[] nums, int start, int end) {
+	    while (start < end) {
+	        int temp = nums[start];
+	        nums[start] = nums[end];
+	        nums[end] = temp;
+	        start++;
+	        end--;
+	    }
+	}
+	
+/**
+ * two sum II sorted
+ */
+	
+public 	int [] twoSum (int [] numbers, int target){
+	int N = numbers.length;
+	int low = 0, high = N-1;
+	while(low < high){
+		int sum = numbers[low] + numbers[high];
+		if(sum > target) high--;
+		else if(sum < target) low--;
+		else return new int [] {low+1, high+1};
+	}
+	
+	throw new IllegalArgumentException("No two Sum solutions");
+}
+	
+/**
+ * No. 204
+ * count primes	
+ * Time ~ O(NlogNlogN), Space ~ O(N) 
+用埃氏筛法（详见上面第二个链接的 Wikipedia），基本想法是：从 2 到 sqrt(n)，对每一个数 i，在 2 到 n 的范围内将 i^2 + k * i (k = 0, 1, 2, ...) 筛去（标记为false，即为合数）；最后将所有标记为 true（即质数）的个数统计出来，即为所有质数的个数。
+注意：本题要求是 less than n，所以在第 7 行和倒数第 3 行的 for loop 里用 j < n，而非 j <= n。
+
+ */
+	public int countPrimes(int n) {
+	    if (n < 2)  return 0;
+	    boolean[] isPrime = new boolean[n];
+	    Arrays.fill(isPrime, true);
+	    for (int i = 2; i <= Math.sqrt(n); i++) {
+	        if (isPrime[i]) {
+	            for (int j = i * i; j < n; j += i)
+	                isPrime[j] = false;
+	        }
+	    }
+	    int count = 0;
+	    for (int i = 2; i < n; i++)
+	        if (isPrime[i]) count++;
+	    return count;
+	}
+
+/**
+ * No. 9
+ * is Palindrome number	
+ */
+	
+	public boolean isPalindrome(int x) {
+	    if (x < 0)  return false;
+	    int div = 1;
+	    while (x / div >= 10) {
+	        div *= 10;
+	    }
+	    int num = x;
+	    while (num != 0) {
+	        int l = num / div;
+	        int r = num % 10;
+	        if (l != r) return false;
+	        num = (num % div) / 10;
+	        div /= 100;
+	    }
+	    return true;
+	}
+	
+	/** 
+	 * another way, reverse the number
+	 * 
+	 */
+	public boolean isPalindrome2(int x) {
+	    int num = x, val = 0;
+	    if (x < 0)  return false;
+	    while (num != 0) {
+	        val = val * 10 + num % 10;
+	        num = num / 10;
+	    }
+	    if (val == x)   return true;
+	    else            return false;
+	}
+/**
+ * No. 215 Kth Largest Element in an Array
+ * 
+ * Find the kth largest element in an unsorted array. Note that it is the kth largest element in the sorted order, not the kth distinct element.
+
+For example,
+Given [3,2,1,5,6,4] and k = 2, return 5.
+ * 	对于 large data 或 data stream（N -> infinity）无法 maintain size 为 N 的 heap，可以用 size 为 K 的 heap，仅当新元素大于 heap min 时再 insert。
+ */
+	public int findKthLargest(int[] nums, int k) {
+	    int n = nums.length;
+	    PriorityQueue<Integer> pq = new PriorityQueue<>(k);
+	    for (int i = 0; i < n; i++) {
+	        if (i < k)  pq.add(nums[i]);
+	        else if (nums[i] > pq.peek()) {
+	            pq.poll();
+	            pq.add(nums[i]);
+	        }            
+	    }
+	    return pq.poll();
+	}
+	/**
+	 * another way
+	 * 2. Max PQ: Time ~ O(N + KlogN), Space ~ O(N) 
+定义一个 Comparator 使 java.util.PriorityQueue 变为 MaxPQ，这样只要 delMax() K 次即可。
+
+	 */
+	public int findKthLargest2(int[] nums, int k) {
+	    int n = nums.length;
+	    
+	    Comparator<Integer> comparator = new Comparator<Integer>() {
+	        public int compare(Integer x, Integer y) {
+	            return y - x;
+	        }
+	    };
+	    
+	    PriorityQueue<Integer> pq = new PriorityQueue<>(n, comparator);
+	    for (int i : nums)
+	        pq.add(i);        
+	    for (int i = 0; i < k - 1; i++)
+	        pq.poll();
+	    return pq.poll();
+	}
+/**
+ * No. 220
+ * Contains Duplicate I, II, III	
+ */
+	
+/**
+ * Contains Duplicate III	
+ * Given an array of integers, find out whether there are two distinct indices i and j in the array such that the difference between nums[i] and nums[j] is at most t and the difference between i and j is at most k.
+ */
+	
+	
+	 public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
+	        TreeSet<Integer> treeset = new TreeSet<>();
+	            for (int i = 0; i < nums.length; ++i) {
+	                Integer floor = nums[i] - t;
+	                Integer ceiling = nums[i] + t + 1;
+	                if ((long) nums[i] - (long) (t) < -2147483647) floor = Integer.MIN_VALUE;
+	                if ((long) nums[i] + (long) (t) + 1 > 2147483646)  ceiling = Integer.MAX_VALUE;
+	                /**
+	                 * int floor = nums[i]<Integer.MIN_VALUE+t ?Integer.MIN_VALUE:nums[i]-t;
+int ceiling = nums[i]>Integer.MAX_VALUE-t ?Integer.MAX_VALUE:nums[i]+t;
+	                 */
+	                
+	                if (t >= 0 && treeset.subSet(floor, ceiling).size() != 0) return true;
+	                treeset.add(nums[i]);
+	                if (i >= k) treeset.remove(nums[i - k]);
+	            }
+	        return false; 
+	    }	
+	 
+/**
+ * No. 219 Contains Duplicate II
+ * Given an array of integers and an integer k, 
+ * find out whether there there are two distinct indices i and j in the array such that nums[i] = nums[j] and the difference between i and j is at most k. 
+ */
+	 
+	 public boolean containsNearbyDuplicate(int[] nums, int k) {
+		    Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		    for (int i = 0; i < nums.length; i++) {
+		        int val = nums[i];
+		        if (!map.containsKey(val))      map.put(val, i);
+		        else if (i - map.get(val) <= k) return true;
+		        else map.put(val,i); // update the map with the lated index if there is replicated value, but doesn't qualify the previous condition.
+		    }
+		    return false;
+		}
+	 
+/**
+ * No. 217
+ *  Contains Duplicate I
+ *  Given an array of integers, find if the array contains any duplicates. Your function should return true if any value appears at least twice in the array, and it should return false if every element is distinct.
+ */
+	 
+	 public boolean containsDuplicate(int[] nums) {
+		    Set<Integer> set = new HashSet<>();
+		    for (int i : nums) {
+		        if (set.contains(i))    return true;
+		        else                    set.add(i);
+		    }
+		    return false;
+		}
+
+
+	 
+/**
+ * No. 229	
+ * Given an integer array of size n, 
+ * find all elements that appear more than ⌊ n/3 ⌋ times. The algorithm should run in linear time and in O(1) space.
+ * @param nums
+ * @return
+ */
+	public List<Integer> majorityElement(int[] nums) {
+	    List<Integer> list = new ArrayList<>();
+	    int n = nums.length;
+	    if (n == 0) return list;
+	    
+	    int num1 = 0, num2 = 0; 
+	    int count1 = 0, count2 = 0;
+	    for (int i = 0; i < n; i++) {
+	        int val = nums[i];
+	        if (count1 == 0) {
+	            num1 = val;
+	            count1 = 1;
+	        } else if (count2 == 0 && num1 != val) {
+	            num2 = val;
+	            count2 = 1;
+	        } else if (num1 == val) {
+	            count1++;
+	        } else if (num2 == val) {
+	            count2++;
+	        } else /* if (num1 != val && num2 != val) */ {
+	            count1--;
+	            count2--;
+	        }
+	    }
+	    
+	    if (isOneThirdMajority(num1, nums)) list.add(num1);
+	    if (num1 != num2 && isOneThirdMajority(num2, nums)) list.add(num2);
+	    return list;
+	}
+
+	private boolean isOneThirdMajority(int val, int[] nums) {
+	    int n = nums.length;
+	    int count = 0;
+	    for (int i = 0; i < n; i++)
+	        if (nums[i] == val) count++;
+	    if (count > n / 3)  return true;
+	    else                return false;
+	}
+	
+	/**No. 228
+	 * Given a sorted integer array without duplicates, return the summary of its ranges.
+
+For example, given [0,1,2,4,5,7], return ["0->2","4->5","7"].
+	 * @param nums
+	 * @return
+	 */
+	public List<String> summaryRanges(int[] nums) {
+	    List<String> ranges = new ArrayList<>();
+	    int n = nums.length;
+	    if (n == 0) return ranges;
+	    
+	    int from = nums[0], to = nums[0], prev = nums[0];
+	    for (int i = 1; i < n; i++) {
+	        int curr = nums[i];
+	        if (curr - prev == 1) { // continuous element
+	            to = curr;
+	        } else {                // non-continuous element
+	            ranges.add(getRange(from, to));
+	            from = curr;
+	            to = curr;
+	        }
+	        prev = curr;
+	    }
+	    ranges.add(getRange(from, to));
+	    return ranges;
+	}
+
+	private String getRange(int from, int to) {
+	    return (from == to) ? Integer.toString(from) : from + "->" + to;
+	}
+	
+	/**
+	 * No. 227
+	 * Basic Calculator II
+	 * 
+	 * Implement a basic calculator to evaluate a simple expression string.
+
+The expression string contains only non-negative integers, +, -, *, / operators and empty spaces . The integer division should truncate toward zero.
+
+You may assume that the given expression is always valid.
+
+Some examples:
+"3+2*2" = 7
+" 3/2 " = 1
+" 3+5 / 2 " = 5
+	 */
+	public int calculate2(String s) {
+	    int len;
+	    if(s==null || (len = s.length())==0) return 0;
+	    Stack<Integer> stack = new Stack<Integer>();
+	    int num = 0;
+	    char sign = '+';
+	    for(int i=0;i<len;i++){
+	        if(Character.isDigit(s.charAt(i))){
+	            num = num*10+s.charAt(i)-'0';
+	        }
+	        if((!Character.isDigit(s.charAt(i)) &&' '!=s.charAt(i)) || i==len-1){
+	            if(sign=='-'){
+	                stack.push(-num);
+	            }
+	            if(sign=='+'){
+	                stack.push(num);
+	            }
+	            if(sign=='*'){
+	                stack.push(stack.pop()*num);
+	            }
+	            if(sign=='/'){
+	                stack.push(stack.pop()/num);
+	            }
+	            sign = s.charAt(i);
+	            num = 0;
+	        }
+	    }
+
+	    int re = 0;
+	    for(int i:stack){
+	        re += i;
+	    }
+	    return re;
+	}
+	
+	
+/**
+ * No. 224
+ * 	Implement a basic calculator to evaluate a simple expression string.
+
+The expression string may contain open ( and closing parentheses ), the plus + or minus sign -, non-negative integers and empty spaces .
+
+You may assume that the given expression is always valid.
+
+Some examples:
+"1 + 1" = 2
+" 2-1 + 2 " = 3
+"(1+(4+5+2)-3)+(6+8)" = 23
+
+Simple iterative solution by identifying characters one by one. One important thing is that the input is valid, which means the parentheses are always paired and in order. Only 5 possible input we need to pay attention:
+
+digit: it should be one digit from the current number
+'+': number is over, we can add the previous number and start a new number
+'-': same as above
+'(': push the previous result and the sign into the stack, set result to 0, just calculate the new result within the parenthesis.
+')': pop out the top two numbers from stack, first one is the sign before this pair of parenthesis, second is the temporary result before this pair of parenthesis. We add them together.
+Finally if there is only one number, from the above solution, we haven't add the number to the result, so we do a check see if the number is zero.
+
+ */
+	public int calculate(String s) {
+	    Stack<Integer> stack = new Stack<Integer>();
+	    int result = 0;
+	    int number = 0;
+	    int sign = 1;
+	    for(int i = 0; i < s.length(); i++){
+	        char c = s.charAt(i);
+	        if(Character.isDigit(c)){
+	            number = 10 * number + (int)(c - '0');
+	        }else if(c == '+'){
+	            result += sign * number;
+	            number = 0;
+	            sign = 1;
+	        }else if(c == '-'){
+	            result += sign * number;
+	            number = 0;
+	            sign = -1;
+	        }else if(c == '('){
+	            //we push the result first, then sign;
+	            stack.push(result);
+	            stack.push(sign);
+	            //reset the sign and result for the value in the parenthesis
+	            sign = 1;   
+	            result = 0;
+	        }else if(c == ')'){
+	            result += sign * number;  
+	            number = 0;
+	            result *= stack.pop();    //stack.pop() is the sign before the parenthesis
+	            result += stack.pop();   //stack.pop() now is the result calculated before the parenthesis
+
+	        }
+	    }
+	    if(number != 0) result += sign * number;
+	    return result;
+	}
+	/**
+	 * No.216 Find all possible combinations of k numbers that add up to a
+	 * number n, given that only numbers from 1 to 9 can be used and each
+	 * combination should be a unique set of numbers.
+	 * 
+	 * Ensure that numbers within the set are sorted in ascending order.
+	 * 
+	 * 
+	 * Example 1:
+	 * 
+	 * Input: k = 3, n = 7
+	 * 
+	 * Output:
+	 * 
+	 * [[1,2,4]]
+	 * 
+	 * Example 2:
+	 * 
+	 * Input: k = 3, n = 9
+	 * 
+	 * Output:
+	 * 
+	 * [[1,2,6], [1,3,5], [2,3,4]]
+	 * 
+	 */
+
+	public List<List<Integer>> combinationSum3(int k, int n) {
+		List<List<Integer>> result = new ArrayList<List<Integer>>();
+		int[] digits = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+		int index = 0;
+		int sum = 0;
+		ArrayList<Integer> currentList = new ArrayList<Integer>();
+		findComb(k, n, digits, index, sum, result, currentList);
+		return result;
+	}
+
+	public void findComb(int k, int n, int[] digits, int index, int sum,
+			List<List<Integer>> result, ArrayList<Integer> currentList) {
+
+		if (currentList.size() == k) {
+			if (sum == n)
+				result.add(new ArrayList<Integer>(currentList));
+			return;
+		}
+
+		for (int i = index; i < digits.length; i++) {
+			currentList.add(digits[i]);
+			sum += digits[i];
+			findComb(k, n, digits, i + 1, sum, result, currentList);
+			currentList.remove(currentList.size() - 1);
+			sum = sum - digits[i];
+		}
+	}
+
+	/**
+	 * There are two sorted arrays nums1 and nums2 of size m and n respectively.
+	 * Find the median of the two sorted arrays. The overall run time complexity
+	 * should be O(log (m+n)).
+	 */
+	public double findMedianSortedArrays(int[] nums1, int[] nums2) {
+
+		double result = 0;
+
+		return result;
+	}
+
+	/**
+	 * Two Sum problem, Given an array of integers, find two numbers such that
+	 * they add up to a specific target number.
+	 */
+
+	public boolean twoSum(int target, int[] input) {
+		Map<Integer, Integer> table = new HashMap<Integer, Integer>();
+		for (int i = 0; i < input.length; i++) {
+			int count = table.containsKey(input[i]) ? 1 : 0;
+			table.put(input[i], count + 1);
+		}
+
+		for (Map.Entry<Integer, Integer> entry : table.entrySet()) {
+			int left = entry.getKey();
+			int right = target - left;
+			// For duplicates, ensure there are at least two individual numbers.
+			if (left == right) {
+				if (entry.getValue() >= 2)
+					return true;
+			} else if (table.containsKey(right)) {
+				return true;
+			}
+		}
+
+		return false;
+
+	}
+
+	/**
+	 * plus one Given a number represented as an array of digits, plus one to
+	 * the number.
+	 * 
+	 * @param x
+	 * @return
+	 * 
+	 */
+
+	public int[] plusOne(int[] dig) {
+
+		// there is no easy way to change from int[] to list and back worth as
+		// well.
+		List<Integer> digits = new ArrayList<Integer>();
+		for (int i = 0; i < dig.length; i++) {
+			digits.add(dig[i]);
+		}
+
+		int carryOver = 1;
+		for (int i = digits.size() - 1; i >= 0; i--) {
+			if (digits.get(i) + carryOver >= 10) {
+				carryOver = 1;
+				digits.set(i, 0);
+			} else {
+				digits.set(i, digits.get(i) + carryOver);
+				carryOver = 0;
+				break;
+			}
+		}
+		if (carryOver == 1) {
+			digits.add(0, carryOver);
+		}
+
+		int[] arr = new int[digits.size()];
+		for (int i = 0; i < arr.length; i++) {
+			arr[i] = digits.get(i);
+		}
+		return arr;
+	}
+
+	/**
+	 * Reverse digits of an integer. For example: x = 123, return 321. Example
+	 * Questions Candidate Might Ask: Q: What about negative integers? A: For
+	 * input x = –123, you should return –321. Difficulty: Easy, Frequency: High
+	 * ￼￼Q: What if the integer’s last digit is 0? For example, x = 10, 100, ...
+	 * A: Ignore the leading 0 digits of the reversed integer. 10 and 100 are
+	 * both reversed as 1. Q: What if the reversed integer overflows? For
+	 * example, input x = 1000000003. A: In this case, your function should
+	 * return 0.
+	 * 
+	 * @param x
+	 * @return
+	 */
+	public int reverseInt(int x) {
+		int reverse = 0;
+		int y = 0;
+		int flag = 1;
+		if (x < 0) {
+			flag = -1;
+			x = x * flag;
+		}
+		while (x != 0) {
+			if (Math.abs(reverse) > Integer.MAX_VALUE)
+				return 0;
+			x = x / 10;
+			y = x % 10;
+			reverse = reverse * 10 + y;
+		}
+		return reverse;
+	}
+
+	/**
+	 * Question: Given an integer, convert it to a roman numeral. Input is
+	 * guaranteed to be within the range from 1 to 3999. Hint: What is the range
+	 * of the numbers? Solution: Difficulty: Medium, Frequency: Low ￼￼ ￼ Roman
+	 * Literal ￼ Decimal I 1 ￼ V 5 ￼ X 10 ￼ L 50 ￼ C 100 ￼ D ￼ 500 M 1000
+	 */
+	private static final int[] values = { 1000, 900, 500, 400, 100, 90, 50, 40,
+			10, 9, 5, 4, 1 };
+	private static final String[] symbols = { "M", "CM", "D", "CD", "C", "XC",
+			"L", "XL", "X", "IX", "V", "IV", "I" };
+
+	public String intToRoman(int num) {
+		StringBuilder roman = new StringBuilder();
+		int i = 0;
+		while (num > 0) {
+			int k = num / values[i];
+			for (int j = 0; j < k; j++) {
+				roman.append(symbols[i]);
+				num -= values[i];
+			}
+			i++;
+		}
+		return roman.toString();
+	};
+
+	/**
+	 * Given a roman numeral, convert it to an integer. Input is guaranteed to
+	 * be within the range from 1 to 3999. Solution: Difficulty: Medium,
+	 * Frequency: Low ￼￼ Roman Literal Decimal I 1 V 5 ￼ X 10 L 50 C ￼ 100 D ￼
+	 * 500 ￼ ￼M 1000
+	 */
+	private Map<Character, Integer> map = new HashMap<Character, Integer>() {
+		{
+			put('I', 1);
+			put('V', 5);
+			put('X', 10);
+			put('L', 50);
+			put('C', 100);
+			put('D', 500);
+			put('M', 1000);
+		}
+	};
+
+	public int romanToInt(String s) {
+		int prev = 0, total = 0;
+		for (char c : s.toCharArray()) {
+			int curr = map.get(c);
+			total += (curr > prev) ? (curr - 2 * prev) : curr;
+			prev = curr;
+		}
+		return total;
+	}
+
+	/**
+	 * Evaluate the value of an arithmetic expression in Reverse Polish
+	 * Notation. Valid operators are +, -, *, /. Each operand may be an integer
+	 * or another expression. Some examples: ["2", "1", "+", "3", "*"] -> ((2 +
+	 * 1) * 3) -> 9 ["4", "13", "5", "/", "+"] -> (4 + (13 / 5)) -> 6
+	 */
+
+	private static final Set<String> OPERATORS = new HashSet<>(Arrays.asList(
+			"+", "-", "*", "/"));
+
+	public int evalRPN(String[] tokens) {
+		Stack<Integer> stack = new Stack<>();
+		for (String token : tokens) {
+			if (OPERATORS.contains(token)) {
+				int y = stack.pop();
+				int x = stack.pop();
+				stack.push(eval(x, y, token));
+			} else {
+				stack.push(Integer.parseInt(token));
+			}
+		}
+		return stack.pop();
+	}
+
+	private int eval(int x, int y, String operator) {
+		switch (operator) {
+		case "+":
+			return x + y;
+		case "-":
+			return x - y;
+		case "*":
+			return x * y;
+		default:
+			return x / y;
+		}
+	}
+
+	/**
+	 * No. 209 Given an array of n positive integers and a positive integer s,
+	 * find the minimal length of a subarray of which the sum ≥ s. If there
+	 * isn't one, return 0 instead.
+	 * 
+	 * For example, given the array [2,3,1,2,4,3] and s = 7, the subarray [4,3]
+	 * has the minimal length under the problem constraint.
+	 * 
+	 * @param s
+	 * @param nums
+	 * @return
+	 */
+	public int minSubArrayLen(int s, int[] nums) {
+		int minSize = Integer.MAX_VALUE;
+		LinkedList<Integer> list = new LinkedList<Integer>();
+		int begin = 0;
+		int end = 0;
+		int sum = 0;
+
+		while (end < nums.length) {
+			while (sum < s && end < nums.length) {
+				sum += nums[end++];
+			}
+			while (sum >= s && begin < nums.length) {
+				minSize = Math.min(minSize, end - begin);
+				sum -= nums[begin++];
+			}
+		}
+
+		return minSize == Integer.MAX_VALUE ? 0 : minSize;
+
+	}
+
+	/**
+	 * No. 162 Find peak A peak element is an element that is greater than its
+	 * neighbors.
+	 * 
+	 * Given an input array where num[i] ≠ num[i+1], find a peak element and
+	 * return its index.
+	 * 
+	 * The array may contain multiple peaks, in that case return the index to
+	 * any one of the peaks is fine.
+	 * 
+	 * You may imagine that num[-1] = num[n] = -∞.
+	 * 
+	 * For example, in array [1, 2, 3, 1], 3 is a peak element and your function
+	 * should return the index number 2.
+	 */
+
+	public int findPeakElement(int[] nums) {
+		if (nums.length == 0)
+			return -1;
+		if (nums.length == 1)
+			return 0;
+
+		int[] copy = new int[nums.length + 2];
+		copy[0] = Integer.MIN_VALUE;
+		copy[copy.length - 1] = Integer.MIN_VALUE;
+		for (int i = 1; i < copy.length - 1; i++) {
+			copy[i] = nums[i - 1];
+		}
+
+		for (int i = 1; i < copy.length - 1; i++) {
+			if (copy[i] > copy[i - 1] && copy[i] > copy[i + 1])
+				return i - 1;
+		}
+
+		return -1;
+	}
+
+	/**
+	 * No. 179 Given a list of non negative integers, arrange them such that
+	 * they form the largest number.
+	 * 
+	 * For example, given [3, 30, 34, 5, 9], the largest formed number is
+	 * 9534330.
+	 * 
+	 * Note: The result may be very large, so you need to return a string
+	 * instead of an integer.
+	 */
+
+	public String largestNumber(int[] nums) {
+
+		class NumComparator implements Comparator<Integer> {
+			@Override
+			public int compare(Integer i1, Integer i2) {
+				String s1 = String.valueOf(i1) + String.valueOf(i2);
+				String s2 = String.valueOf(i2) + String.valueOf(i1);
+				for (int i = 0; i < s1.length(); i++) {
+					if (s1.charAt(i) > s2.charAt(i))
+						return 1;
+					if (s1.charAt(i) < s2.charAt(i))
+						return -1;
+				}
+				return 0;
+			}
+		}
+
+		String result = "";
+		if (nums == null || nums.length == 0)
+			return result; // special case
+		Integer[] copy = new Integer[nums.length];
+		for (int i = 0; i < nums.length; i++)
+			copy[i] = nums[i];
+		Arrays.sort(copy, new NumComparator()); // sort
+		if (copy[copy.length - 1] == 0)
+			return "0"; // if all element is 0, return "0"
+		for (int i = copy.length - 1; i >= 0; i--)
+			result += String.valueOf(copy[i]);
+		return result;
+	}
+
+	class NumComparator implements Comparator<Integer> {
+		@Override
+		public int compare(Integer i1, Integer i2) {
+			String s1 = String.valueOf(i1) + String.valueOf(i2);
+			String s2 = String.valueOf(i2) + String.valueOf(i1);
+			for (int i = 0; i < s1.length(); i++) {
+				if (s1.charAt(i) > s2.charAt(i))
+					return 1;
+				if (s1.charAt(i) < s2.charAt(i))
+					return -1;
+			}
+			return 0;
+		}
+	}
+
+	/**
+	 * No. 153 Find Minimum in Rotated Sorted Array Suppose a sorted array is
+	 * rotated at some pivot unknown to you beforehand.
+	 * 
+	 * (i.e., 0 1 2 4 5 6 7 might become 4 5 6 7 0 1 2).
+	 * 
+	 * Find the minimum element.
+	 * 
+	 * You may assume no duplicate exists in the array.
+	 * 
+	 * @param nums
+	 * @return
+	 */
+	public int findMin(int[] nums) {
+		if (nums.length == 1)
+			return nums[0];
+		return findHelper(nums, 0, nums.length - 1);
+	}
+
+	public int findHelper(int[] nums, int start, int end) {
+		if (start == end)
+			return nums[start];
+		if (end - start == 1)
+			return Math.min(nums[start], nums[end]);
+		int middle = start + (end - start) / 2;
+		if (nums[middle] < nums[end])
+			return findHelper(nums, start, middle);
+		if (nums[middle] > nums[end])
+			return findHelper(nums, middle + 1, end);
+		return 0;
+	}
+
+	/**
+	 * No. 154 Find Minimum in Rotated Sorted Array II Follow up for
+	 * "Find Minimum in Rotated Sorted Array": What if duplicates are allowed?
+	 */
+
+	public int findMin2(int[] nums) {
+		if (nums.length == 1)
+			return nums[0];
+		return findHelper2(nums, 0, nums.length - 1);
+	}
+
+	public int findHelper2(int[] nums, int start, int end) {
+		if (start == end)
+			return nums[start];
+		if (end - start == 1)
+			return Math.min(nums[start], nums[end]);
+		int middle = start + (end - start) / 2;
+		if (nums[middle] < nums[end])
+			return findHelper2(nums, start, middle);
+		else if (nums[middle] > nums[end])
+			return findHelper2(nums, middle, end);
+		// have to deal with the case that middle equal to end, there are two
+		// cases here
+		// if start != middle, the number must be with [start, middle]
+		// if start == middle, then it is hard to say, and have to check both
+		// sides.
+		else {
+			if (nums[start] != nums[middle])
+				return findHelper2(nums, start, middle);
+			int right = findHelper2(nums, middle, end);
+			int left = findHelper2(nums, start, middle);
+			return right >= left ? left : right;
+		}
+
+	}
+
+	/**
+	 * 
+	 */
+	public class Interval {
+		int start;
+		int end;
+
+		Interval() {
+			start = 0;
+			end = 0;
+		}
+
+		Interval(int s, int e) {
+			start = s;
+			end = e;
+		}
+	}
+
+	public List<Interval> insert(List<Interval> intervals, Interval newInterval) {
+		List<Interval> result = new ArrayList<Interval>();
+		for (Interval i : intervals) {
+			if (newInterval == null || i.end < newInterval.start)   // this new Interval not affect the current i, but may affect the next one
+				result.add(i);  
+			else if (i.start > newInterval.end) {  // this newInterval not affect the existing
+				result.add(newInterval);
+				result.add(i);
+				newInterval = null;
+			} else {   // the newInterval interact with the exist one.
+				newInterval.start = Math.min(newInterval.start, i.start);
+				newInterval.end = Math.max(newInterval.end, i.end);
+			}
+		}
+		if (newInterval != null)
+			result.add(newInterval);
+		return result;
+	}
+
+	/**
+	 * No. 152 Find the contiguous subarray within an array (containing at least
+	 * one number) which has the largest product.
+	 * 
+	 * For example, given the array [2,3,-2,4], the contiguous subarray [2,3]
+	 * has the largest product = 6. Max product
+	 */
+
+	public int MaxProduct(int[] nums) {
+		int maxProd = nums[0];
+
+		// simple case
+		if (nums.length == 1)
+			return maxProd;
+
+		// other cases
+		/*
+		 * adding a one in front of the sequence does not change the solution,
+		 * so let's just assume we already read a one.
+		 */
+		int first_neg = 1, run = 1;
+		for (int i = 0; i < nums.length; i++) {
+			// read a non-zero integer
+			if (nums[i] != 0) {
+				run *= nums[i];
+				// negative running product
+				if (run < 0) {
+					if (first_neg > 0)
+						first_neg = run; // first negative running product
+					else
+						maxProd = Math.max(maxProd, run / first_neg);
+				}
+				// positive running product
+				else
+					maxProd = Math.max(maxProd, run);
+			}
+			// restart when reading a zero
+			else {
+				maxProd = Math.max(maxProd, 0);
+				first_neg = 1;
+				run = 1;
+			}
+		}
+		return maxProd;
+	}
+
+	/**
+	 * No. 152 Besides keeping track of the largest product, we also need to
+	 * keep track of the smallest product. Why? The smallest product, which is
+	 * the largest in the negative sense could become the maximum when being
+	 * multiplied by a negative number.
+	 * 
+	 * Let us denote that:
+	 * 
+	 * f(k) = Largest product subarray, from index 0 up to k. Similarly,
+	 * 
+	 * g(k) = Smallest product subarray, from index 0 up to k. Then,
+	 * 
+	 * f(k) = max( f(k-1) * A[k], A[k], g(k-1) * A[k] ) g(k) = min( g(k-1) *
+	 * A[k], A[k], f(k-1) * A[k] )
+	 * 
+	 * @param nums
+	 * @return
+	 */
+
+	public int maxProduct(int[] nums) {
+		int f = nums[0], g = nums[0], ans = nums[0];
+		for (int i = 1; i < nums.length; i++) {
+			int ff = Math.max(f * nums[i], Math.max(g * nums[i], nums[i]));
+			int gg = Math.min(g * nums[i], Math.min(f * nums[i], nums[i]));
+			ans = Math.max(ff, ans);
+			f = ff;
+			g = gg;
+		}
+		return ans;
+	}
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		// TODO Auto-generated method stub
+		Numbers num = new Numbers();
+		int[] nums = { 2, 1 };
+		int x = num.findPeakElement(nums);
+		System.out.println(x);
+		// System.out.println(num.combinationSum3(2, 18));
+	}
+
+}

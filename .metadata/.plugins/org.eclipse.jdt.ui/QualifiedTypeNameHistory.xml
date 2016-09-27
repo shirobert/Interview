@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<qualifiedTypeNameHistroy>
+<fullyQualifiedTypeName name="java.util.HashMap"/>
+<fullyQualifiedTypeName name="java.util.Map"/>
+<fullyQualifiedTypeName name="test.LRUCache"/>
+<fullyQualifiedTypeName name="java.util.List"/>
+<fullyQualifiedTypeName name="java.util.ArrayList"/>
+<fullyQualifiedTypeName name="com.interview.structure.stack.Stack"/>
+<fullyQualifiedTypeName name="com.interview.structure.stack.ArrayStack"/>
+<fullyQualifiedTypeName name="net.datastructures.SinglyLinkedList"/>
+<fullyQualifiedTypeName name="net.datastructures.List"/>
+<fullyQualifiedTypeName name="java.util.Collections"/>
+</qualifiedTypeNameHistroy>
